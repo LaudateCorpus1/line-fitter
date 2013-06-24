@@ -1,0 +1,13 @@
+.chart {
+    border: 1px solid gray;
+    background-color: #AFAFAF;
+}
+
+.chart text {
+    fill: #495961;
+    font: 10px sans-serif;
+}
+
+.chart line {
+    stroke: #ccc;
+}
