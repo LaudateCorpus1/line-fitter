@@ -128,11 +128,11 @@ var lineFit = (function() {
         div.append("<div class='row-fluid well'><h2>Line-Fitting</h2></div><div class='row-fluid'><div class='span6 graph well'></div><div class='span6 controls well'></div></div>");
         $(".controls").append("<div class='container-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><button class = 'plot-fit'>Plot Best-Fit</button><br></br><div class='row-fluid'><button class = 'toggle-error'>Toggle Error Display</button><br></br><div class='a-slider'></div><br></br><div class='b-slider'></div></div></div>");
         $(".graph").append("<div class='container-fluid'><div class='chart-container'></div></div>");
-        var aSlider = $(".a-slider").slider({ min: -10, max: 10, change: function( event, ui ) {
+        var aSlider = $(".a-slider").slider({ min: -10, max: 10, slide: function( event, ui ) {
             model.change_a(ui.value);
             displayLine(model.getCoeffs());
             } });
-        var bSlider = $(".b-slider").slider({ min: -10, max: 10, change: function( event, ui ) {model.change_b(ui.value);
+        var bSlider = $(".b-slider").slider({ min: -10, max: 10, slide: function( event, ui ) {model.change_b(ui.value);
             displayLine(model.getCoeffs());
                                                                                                } });
         aSlider.slider("disable");
