@@ -28,6 +28,7 @@ var lineFit = (function() {
     //keeping track of data points
     var points = [];
     
+    
 ////////////////////////////////// helper functions    
 
 /////////////////////////////////// set up div functions
@@ -36,11 +37,19 @@ var lineFit = (function() {
         var pointList = []; //array of [x,y] arrays
         var bestFitCoeffs = []; //[a,b] where a and b are from y = ax + b
         
-        function add_point(){ // add a point
+        function add_point(point){ // add a point
+            pointList.push(point);
         }
-        function change_line(){ //change the coefficients of the best fit line
+        function get_point_list(){
+            return pointList;
         }
-        return {add_point: add_point, change_line: change_line};
+        function change_line(newCoeffs){ //change the coefficients of the best fit line
+            bestFitCoeffs = newCoeffs;
+        }
+        function getCoeffs(){ //return the coefficients of the current best fit line
+            return bestFitCoeffs;
+        }
+        return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs};
     }
     
     function Controller(model) {
@@ -50,22 +59,73 @@ var lineFit = (function() {
         function add_point_from_input(){
         }
         function change_best_fit_line(){
+            var coeffs = bestFit(model.get_point_list())
+            console.log(coeffs);
+            model.change_line(coeffs);
         }
-        return {};
+        return {add_point_from_input: add_point_from_input, change_best_fit_line: change_best_fit_line};
     }
     
     function View(div,model,controller) {       
         div.append("<div class='row-fluid well'><h2>Line-Fitting</h2></div><div class='row-fluid'><div class='span6 graph well'></div><div class='span6 controls well'></div></div>");
         $(".controls").append("<div class='container-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><button class = 'plot-fit'>Plot Best-Fit</button><br></br><div class='row-fluid'><button class = 'toggle-error'>Toggle Error Display</button><br></br><div class='a-slider'></div><br></br><div class='b-slider'></div></div></div>");
         $(".graph").append("<div class='container-fluid'><div class='chart-container'></div></div>");
-        $(".a-slider").slider();
-        $(".b-slider").slider();
+        var aSlider = $(".a-slider").slider({ min: -10, max: 10 });
+        var bSlider = $(".b-slider").slider({ min: -10, max: 10 });
+        aSlider.slider("disable");
+        bSlider.slider("disable");
         
-        return {};
+        setupGraph();
+         //takes coefficients to y=ax+b and displays the corresponding on the graph
+        function displayLine(coefficients){
+            chart.selectAll(".best-fit").data(coefficients).remove();
+
+            var y1 = coefficients[0]*xMin+coefficients[1];
+            var y2 = coefficients[0]*xMax+coefficients[1];
+            
+            chart.selectAll(".best-fit").data(coefficients).enter().append("line").attr("class", "best-fit").attr('x1', x_scale(xMin)).attr('x2', x_scale(xMax)).attr('y1', y_scale(y1)).attr('y2',y_scale(y2));
+        }
+        //adds a circular point of radius 2px at coordinates (x,y) to the svg canvas
+        function addPointToGraph(x,y){
+            chart.selectAll(".datapoint").data([0]).enter().append("circle")
+                .attr("class", "endpoint")
+                .attr("cx", x_scale(x))
+                .attr("cy", y_scale(y))
+                .attr("r", "2");
+            model.add_point([x,y]);
+        }
+        
+        //functionality to the buttons
+        $('.add-point').on("click",function(){
+            addPointToGraph(parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val()));
+        });
+        
+        $('.plot-fit').on("click",function(){
+            controller.change_best_fit_line();
+            var coefficients = model.getCoeffs();
+            displayLine(coefficients);
+            aSlider.slider("enable");
+            aSlider.slider("option","value",coefficients[0]);
+            bSlider.slider("enable");
+            bSlider.slider("option","value",coefficients[1]);
+        });
+        
+        $('.toggle-error').on("click",function(){
+            $(this).toggleClass("selected");
+            if($(this).hasClass("selected")){
+                turnErrorDisplayOn();
+            }
+            else{
+                turnErrorDisplayOff();
+            }
+        });
+        
+        return {displayLine: displayLine};
     }
     
     //set up svg with axes and labels
     function setupGraph(){
+
         chart = d3.select(".chart-container").append("svg").attr("class","chart").attr("height", outer_height).attr("width",outer_width).append("g").attr("transform","translate(" + margin.left + "," + margin.top + ")").on("mousemove", function() { move(d3.mouse(this)); }).on("click",function(){click(d3.mouse(this))});
         
         function move(p2) {
@@ -88,29 +148,18 @@ var lineFit = (function() {
         chart.selectAll(".x-scale-label").data(x_scale.ticks(10)).enter().append("text").attr("class", "x-scale-label").attr("x",x_scale).attr('y',y_scale(0)).attr("text-anchor","end").attr("dy","0.3em").attr("dx","0.5em").text(String);
 
     }
-        
-    
-    //adds a circular point of radius 2px at coordinates (x,y) to the svg canvas
-    function addPoint(x,y){
-        chart.selectAll(".datapoint").data([0]).enter().append("circle")
-            .attr("class", "endpoint")
-            .attr("cx", x_scale(x))
-            .attr("cy", y_scale(y))
-            .attr("r", "2");
-        points.push([x,y]);
-    }
     
     //finds the best fit for the points on the graph
-    function bestFit(){
+    function bestFit(pointList){
         var lineCoeffs; //coefficients of y=ax+b in the form [a,b]
-        if(points.length <2){
+        if(pointList.length <2){
             lineCoeffs = [0,0];
         }
-        else if(points.length ==2){
-            var x1 = points[0][0];
-            var x2 = points[1][0];
-            var y1 = points[0][1];
-            var y2 = points[1][1];
+        else if(pointList.length ==2){
+            var x1 = pointList[0][0];
+            var x2 = pointList[1][0];
+            var y1 = pointList[0][1];
+            var y2 = pointList[1][1];
             
             var a = (y2-y1)/(x2-x1);
             var b = y1 - a*x1;
@@ -152,15 +201,6 @@ var lineFit = (function() {
         return [a,b];
     }
     
-    //takes coefficients to y=ax+b and displays the corresponding on the graph
-    function displayLine(coeffs){
-        chart.selectAll(".best-fit").data(coeffs).remove();
-        var lineCoeffs = coeffs; //bestFit();
-        var y1 = lineCoeffs[0]*xMin+lineCoeffs[1];
-        var y2 = lineCoeffs[0]*xMax+lineCoeffs[1];
-        
-        chart.selectAll(".best-fit").data(coeffs).enter().append("line").attr("class", "best-fit").attr('x1', x_scale(xMin)).attr('x2', x_scale(xMax)).attr('y1', y_scale(y1)).attr('y2',y_scale(y2));
-    }
     
     //adds vertical bars from point to best-fit line (with color scale that displays how much error)
     function turnErrorDisplayOn(){
@@ -172,36 +212,15 @@ var lineFit = (function() {
         
     //setup main structure of app
     function setup(div) {
-        setupGraph();
-        
+
         var model = Model();
         var controller = Controller(model);
         var view = View(div, model, controller);
-        
-
-        $('.add-point').on("click",function(){
-            addPoint(parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val()));
-        });
-        
-        $('.plot-fit').on("click",function(){
-            displayLine(bestFit());
-        });
-        
-        $('.toggle-error').on("click",function(){
-            $(this).toggleClass("selected");
-            if($(this).hasClass("selected")){
-                turnErrorDisplayOn();
-            }
-            else{
-                turnErrorDisplayOff();
-            }
-        });
         
         
     }; 
     
     exports.setup = setup;
-    exports.displayLine = displayLine;
     
     return exports;
 }());
