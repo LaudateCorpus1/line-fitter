@@ -35,7 +35,7 @@ var lineFit = (function() {
     
     function Model() {
         var pointList = []; //array of [x,y] arrays
-        var bestFitCoeffs = []; //[a,b] where a and b are from y = ax + b
+        var currentCoeffs = []; //[a,b] where a and b are from y = ax + b
         
         function add_point(point){ // add a point
             pointList.push(point);
@@ -44,18 +44,32 @@ var lineFit = (function() {
             return pointList;
         }
         function change_line(newCoeffs){ //change the coefficients of the best fit line
-            bestFitCoeffs = newCoeffs;
+            currentCoeffs = newCoeffs;
         }
         function change_a(a){
-            bestFitCoeffs[0] = a;
+            currentCoeffs[0] = a;
         }
         function change_b(b){
-            bestFitCoeffs[1] = b;
+            currentCoeffs[1] = b;
         }
         function getCoeffs(){ //return the coefficients of the current best fit line
-            return bestFitCoeffs;
+            return currentCoeffs;
         }
-        
+        function findError(){
+            var totalError = 0;
+            for(var i=0; i<pointList.length; i++){
+                totalError += pointList[i][0]-lineAt(pointList[i][0]);
+            }
+            return totalError;
+        }
+        function findSumOfSquares(){
+        }
+            
+        //returns the value of the line at a point
+        function lineAt(x){
+            return currentCoeffs[0]*x+currentCoeffs[1]
+        }
+            
         //finds the best fit for the points on the graph
         function bestFit(){
             var lineCoeffs; //coefficients of y=ax+b in the form [a,b]
@@ -112,9 +126,6 @@ var lineFit = (function() {
     }
     
     function Controller(model) {
-        
-        function add_points_from_file(file){
-        }
         function add_point_from_input(){
         }
         function change_best_fit_line(){
@@ -126,15 +137,18 @@ var lineFit = (function() {
     
     function View(div,model,controller) {       
         div.append("<div class='row-fluid well'><h2>Line-Fitting</h2></div><div class='row-fluid'><div class='span6 graph well'></div><div class='span6 controls well'></div></div>");
-        $(".controls").append("<div class='container-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><button class = 'plot-fit'>Plot Best-Fit</button><br></br><div class='row-fluid'><button class = 'toggle-error'>Toggle Error Display</button><br></br><div class='a-slider'></div><br></br><div class='b-slider'></div></div></div>");
-        $(".graph").append("<div class='container-fluid'><div class='chart-container'></div></div>");
-        var aSlider = $(".a-slider").slider({ min: -10, max: 10, slide: function( event, ui ) {
+        $(".controls").append("<div class='container-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><button class = 'plot-fit'>Plot Best-Fit</button> <span class='equation'>y=ax+b</span></div><div class='row-fluid'><button class = 'toggle-error'>Toggle Error Display</button><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><button class='spreadsheet'>Spreadsheet</button></div></div>");
+        $(".graph").append("<div class='chart-container'></div><div class='labels'></div>");
+        var aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .1, slide: function( event, ui ) {
             model.change_a(ui.value);
             displayLine(model.getCoeffs());
+            $('.a-label').html(ui.value);
             } });
-        var bSlider = $(".b-slider").slider({ min: -10, max: 10, slide: function( event, ui ) {model.change_b(ui.value);
+        var bSlider = $(".b-slider").slider({ min: -10, max: 10, step: .1, slide: function( event, ui ) {
+            model.change_b(ui.value);
             displayLine(model.getCoeffs());
-                                                                                               } });
+            $('.b-label').html(ui.value);
+            } });
         aSlider.slider("disable");
         bSlider.slider("disable");
         
@@ -178,8 +192,11 @@ var lineFit = (function() {
             displayLine(coefficients);
             aSlider.slider("enable");
             aSlider.slider("option","value",coefficients[0]);
+            $('.a-label').html(Math.round(coefficients[0]*100)/100);
             bSlider.slider("enable");
             bSlider.slider("option","value",coefficients[1]);
+            $('.b-label').html(Math.round(coefficients[0]*100)/100);
+            $('.equation').html("y="+Math.round(coefficients[0]*100)/100+"x+("+Math.round(coefficients[0]*100)/100+")");
         });
         
         $('.toggle-error').on("click",function(){
@@ -192,7 +209,7 @@ var lineFit = (function() {
             }
         });
         
-        return {displayLine: displayLine};
+        return {displayLine: displayLine, addPointToGraph: addPointToGraph};
     }
     
     //set up svg with axes and labels
@@ -228,7 +245,10 @@ var lineFit = (function() {
         var controller = Controller(model);
         var view = View(div, model, controller);
         
-        
+        var points = [[0,0],[1,1],[2,1]];
+        for(var i =0; i<points.length; i++){
+            view.addPointToGraph(points[i][0],points[i][1]);
+        }
     }; 
     
     exports.setup = setup;
