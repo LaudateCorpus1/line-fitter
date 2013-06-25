@@ -46,10 +46,69 @@ var lineFit = (function() {
         function change_line(newCoeffs){ //change the coefficients of the best fit line
             bestFitCoeffs = newCoeffs;
         }
+        function change_a(a){
+            bestFitCoeffs[0] = a;
+        }
+        function change_b(b){
+            bestFitCoeffs[1] = b;
+        }
         function getCoeffs(){ //return the coefficients of the current best fit line
             return bestFitCoeffs;
         }
-        return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs};
+        
+        //finds the best fit for the points on the graph
+        function bestFit(){
+            var lineCoeffs; //coefficients of y=ax+b in the form [a,b]
+            if(pointList.length <2){
+                lineCoeffs = [0,0];
+            }
+            else if(pointList.length ==2){
+                var x1 = pointList[0][0];
+                var x2 = pointList[1][0];
+                var y1 = pointList[0][1];
+                var y2 = pointList[1][1];
+                
+                var a = (y2-y1)/(x2-x1);
+                var b = y1 - a*x1;
+                
+                lineCoeffs = [a,b];
+            }
+            else{
+                lineCoeffs = linear_regression(pointList);
+            }
+                
+            return lineCoeffs;
+        }
+            //sums the errors of the points and returns optimized a and b for y = ax + b
+        function linear_regression()
+        {
+            var i, x, y,
+                sumx=0, sumy=0, sumx2=0, sumy2=0, sumxy=0,
+                a, b;
+            var count = pointList.length;
+                
+            for(i=0;i<pointList.length;i++)
+            {   
+                // this is our data pair
+                x = pointList[i][0]; y = pointList[i][1]; 
+        
+                sumx += x;
+                sumx2 += (x*x);
+                sumy += y;
+                sumy2 += (y*y);
+                sumxy += (x*y);
+            }
+        
+            // note: the denominator is the variance of the random variable X
+            // the only case when it is 0 is the degenerate case X==constant
+            var b = (sumy*sumx2 - sumx*sumxy)/(count*sumx2-sumx*sumx);
+            var a = (count*sumxy - sumx*sumy)/(count*sumx2-sumx*sumx);
+            
+            return [a,b];
+        }
+        
+        
+        return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, change_a: change_a, change_b: change_b, bestFit: bestFit, linear_regression: linear_regression};
     }
     
     function Controller(model) {
@@ -59,8 +118,7 @@ var lineFit = (function() {
         function add_point_from_input(){
         }
         function change_best_fit_line(){
-            var coeffs = bestFit(model.get_point_list())
-            console.log(coeffs);
+            var coeffs = model.bestFit(model.get_point_list())
             model.change_line(coeffs);
         }
         return {add_point_from_input: add_point_from_input, change_best_fit_line: change_best_fit_line};
@@ -70,8 +128,13 @@ var lineFit = (function() {
         div.append("<div class='row-fluid well'><h2>Line-Fitting</h2></div><div class='row-fluid'><div class='span6 graph well'></div><div class='span6 controls well'></div></div>");
         $(".controls").append("<div class='container-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><button class = 'plot-fit'>Plot Best-Fit</button><br></br><div class='row-fluid'><button class = 'toggle-error'>Toggle Error Display</button><br></br><div class='a-slider'></div><br></br><div class='b-slider'></div></div></div>");
         $(".graph").append("<div class='container-fluid'><div class='chart-container'></div></div>");
-        var aSlider = $(".a-slider").slider({ min: -10, max: 10 });
-        var bSlider = $(".b-slider").slider({ min: -10, max: 10 });
+        var aSlider = $(".a-slider").slider({ min: -10, max: 10, change: function( event, ui ) {
+            model.change_a(ui.value);
+            displayLine(model.getCoeffs());
+            } });
+        var bSlider = $(".b-slider").slider({ min: -10, max: 10, change: function( event, ui ) {model.change_b(ui.value);
+            displayLine(model.getCoeffs());
+                                                                                               } });
         aSlider.slider("disable");
         bSlider.slider("disable");
         
@@ -93,6 +156,15 @@ var lineFit = (function() {
                 .attr("cy", y_scale(y))
                 .attr("r", "2");
             model.add_point([x,y]);
+        }
+        
+            
+        //adds vertical bars from point to best-fit line (with color scale that displays how much error)
+        function turnErrorDisplayOn(){
+        }
+        
+        //removes vertical bars from point to best-fit line
+        function turnErrorDisplayOff(){
         }
         
         //functionality to the buttons
@@ -149,67 +221,6 @@ var lineFit = (function() {
 
     }
     
-    //finds the best fit for the points on the graph
-    function bestFit(pointList){
-        var lineCoeffs; //coefficients of y=ax+b in the form [a,b]
-        if(pointList.length <2){
-            lineCoeffs = [0,0];
-        }
-        else if(pointList.length ==2){
-            var x1 = pointList[0][0];
-            var x2 = pointList[1][0];
-            var y1 = pointList[0][1];
-            var y2 = pointList[1][1];
-            
-            var a = (y2-y1)/(x2-x1);
-            var b = y1 - a*x1;
-            
-            lineCoeffs = [a,b];
-        }
-        else{
-            lineCoeffs = linear_regression();
-        }
-            
-        return lineCoeffs;
-    }
-    
-    //sums the errors of the points and returns optimized a and b for y = ax + b
-    function linear_regression()
-    {
-        var i, x, y,
-            sumx=0, sumy=0, sumx2=0, sumy2=0, sumxy=0,
-            a, b;
-        var count = points.length;
-            
-        for(i=0;i<points.length;i++)
-        {   
-            // this is our data pair
-            x = points[i][0]; y = points[i][1]; 
-    
-            sumx += x;
-            sumx2 += (x*x);
-            sumy += y;
-            sumy2 += (y*y);
-            sumxy += (x*y);
-        }
-    
-        // note: the denominator is the variance of the random variable X
-        // the only case when it is 0 is the degenerate case X==constant
-        var b = (sumy*sumx2 - sumx*sumxy)/(count*sumx2-sumx*sumx);
-        var a = (count*sumxy - sumx*sumy)/(count*sumx2-sumx*sumx);
-        
-        return [a,b];
-    }
-    
-    
-    //adds vertical bars from point to best-fit line (with color scale that displays how much error)
-    function turnErrorDisplayOn(){
-    }
-    
-    //removes vertical bars from point to best-fit line
-    function turnErrorDisplayOff(){
-    }
-        
     //setup main structure of app
     function setup(div) {
 
