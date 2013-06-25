@@ -16,6 +16,11 @@
     stroke: #cc0000;
 }
 
+.chart .error-line{
+    stroke: black;
+    stroke-dasharray: 2,2;
+}
+
 h2{
     text-align: center;
 }

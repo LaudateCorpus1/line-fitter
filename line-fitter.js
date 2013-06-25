@@ -55,17 +55,18 @@ var lineFit = (function() {
         function getCoeffs(){ //return the coefficients of the current best fit line
             return currentCoeffs;
         }
-        function findError(){
+        //sums the difference between where the point is and where the point would be on the line
+        function findErrors(){
             var totalError = 0;
+            var totalSquareError = 0;
             for(var i=0; i<pointList.length; i++){
-                totalError += pointList[i][0]-lineAt(pointList[i][0]);
+                totalError += pointList[i][1]-lineAt(pointList[i][0]);
+                totalSquareError += Math.pow((pointList[i][1]-lineAt(pointList[i][0])),2);
             }
-            return totalError;
-        }
-        function findSumOfSquares(){
+            return [totalError, totalSquareError];
         }
             
-        //returns the value of the line at a point
+        //returns the y value of the line at a point
         function lineAt(x){
             return currentCoeffs[0]*x+currentCoeffs[1]
         }
@@ -122,7 +123,7 @@ var lineFit = (function() {
         }
         
         
-        return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, change_a: change_a, change_b: change_b, bestFit: bestFit, linear_regression: linear_regression};
+        return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, change_a: change_a, change_b: change_b, findErrors: findErrors, lineAt: lineAt, bestFit: bestFit, linear_regression: linear_regression};
     }
     
     function Controller(model) {
@@ -164,8 +165,8 @@ var lineFit = (function() {
         }
         //adds a circular point of radius 2px at coordinates (x,y) to the svg canvas
         function addPointToGraph(x,y){
-            chart.selectAll(".datapoint").data([0]).enter().append("circle")
-                .attr("class", "endpoint")
+            chart.selectAll(".endpoint").data([0]).enter().append("circle")
+                .attr("class", "datapoint")
                 .attr("cx", x_scale(x))
                 .attr("cy", y_scale(y))
                 .attr("r", "2");
@@ -175,10 +176,12 @@ var lineFit = (function() {
             
         //adds vertical bars from point to best-fit line (with color scale that displays how much error)
         function turnErrorDisplayOn(){
+            chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))});
         }
         
         //removes vertical bars from point to best-fit line
         function turnErrorDisplayOff(){
+            chart.selectAll(".error-line").data(model.get_point_list()).remove();
         }
         
         //functionality to the buttons
@@ -226,7 +229,7 @@ var lineFit = (function() {
                 .attr("fill","black")
                 .attr("r","2");
             console.log(p2[0]-margin.left,p2[1]-margin.top);
-            points.push([p2[0],p2[1]]);
+            model.add_point([p2[0],p2[1]]);
         }
         chart.selectAll(".y-line").data(y_scale.ticks(10)).enter().append("line").attr("class", "y-line").attr('x1', 0).attr('x2', chart_width).attr('y1', y_scale).attr('y2',y_scale);
         
@@ -245,7 +248,7 @@ var lineFit = (function() {
         var controller = Controller(model);
         var view = View(div, model, controller);
         
-        var points = [[0,0],[1,1],[2,1]];
+        var points = [[4,4],[1,1],[2,1],[-3,6]];
         for(var i =0; i<points.length; i++){
             view.addPointToGraph(points[i][0],points[i][1]);
         }
