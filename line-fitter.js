@@ -66,10 +66,10 @@ var lineFit = (function() {
                 iError = findError(pointList[i]); //error at the ith point
                 totalError += iError;
                 totalSquareError += Math.pow(iError,2);
-                if(maxError < iError){
+                if(Math.abs(maxError) < Math.abs(iError)){
                     maxError = iError;
                 }
-                if(minError > iError){
+                if(Math.abs(minError) > Math.abs(iError)){
                     minError = iError;
                 }
             }
@@ -155,20 +155,26 @@ var lineFit = (function() {
     function View(div,model,controller) {       
         div.append("<div class='row-fluid well'><h2>Line-Fitting</h2></div><div class='row-fluid'><div class='span6 graph well'></div><div class='span6 controls well'></div></div>");
         $(".controls").append("<div class='container-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><button class = 'plot-fit'>Plot Best-Fit</button> <span class='equation'>y=ax+b</span></div><div class='row-fluid'><button class = 'toggle-error'>Toggle Error Display</button><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><button class='spreadsheet'>Spreadsheet</button></div></div>");
-        $(".graph").append("<div class='chart-container'></div><div class='labels'></div>");
+        $(".graph").append("<div class='chart-container'></div><div class='info-container'></div>");
         var aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .1, slide: function( event, ui ) {
-            turnErrorDisplayOff()
             model.change_a(ui.value);
             displayLine(model.getCoeffs());
             $('.a-label').html(ui.value);
-            turnErrorDisplayOn()
+            displayErrorInfo()    
+            if($('.toggle-error').hasClass("selected")){
+                turnErrorDisplayOff();
+                turnErrorDisplayOn();
+            }
             } });
         var bSlider = $(".b-slider").slider({ min: -10, max: 10, step: .1, slide: function( event, ui ) {
-            turnErrorDisplayOff()
             model.change_b(ui.value);
             displayLine(model.getCoeffs());
             $('.b-label').html(ui.value);
-            turnErrorDisplayOn()
+            displayErrorInfo()
+            if($('.toggle-error').hasClass("selected")){
+                turnErrorDisplayOff();
+                turnErrorDisplayOn();
+            }
                                             } });
         aSlider.slider("disable");
         bSlider.slider("disable");
@@ -194,6 +200,13 @@ var lineFit = (function() {
             model.add_point([x,y]);
         }
         
+        //shows the total error and sum of squares error
+        function displayErrorInfo(){
+            $(".info-container").empty();
+            $(".info-container").append("<div class='row-fluid error' rel='popover' data-content=''></div><div class='row-fluid squared'></div>");
+            $(".error").html("Total error: " + Math.round(model.findErrors().error*10000)/10000);
+            $(".squared").html("Total squared error: " +Math.round(model.findErrors().squareError*10000)/10000);
+        }
             
         //adds vertical bars from point to best-fit line (with color scale that displays how much error)
         function turnErrorDisplayOn(){
@@ -202,6 +215,34 @@ var lineFit = (function() {
                 .range(['#61A72D','#CC0000']);
         
             chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
+            
+            $(".error").popover({trigger: 'hover', title: "Error Value", content: makeErrorString(color_scale), html: true});
+            $(".squared").popover({trigger: 'hover', title: "Sum of Squares Value", content: makeErrorSquareString(color_scale).unsolved + "<br>=</br>" + makeErrorSquareString(color_scale).solved, html: true});
+        }
+        
+        //returns a string that shows how the error was calculated by color
+        function makeErrorString(color_scale){
+            var points = model.get_point_list();
+            var errorArray = [];
+            for(var i = 0; i<points.length; i++){
+                errorArray.push("<span style='color:" + color_scale(model.findError(points[i])) + ";'>(" + Math.round(model.findError(points[i])*100)/100 + ")</span>");
+            }
+            var errorString = errorArray.join("+");
+            return errorString;
+        }
+        
+        //returns a string that shows how the sum of squares error was calculated by color
+        function makeErrorSquareString(color_scale){
+            var points = model.get_point_list();
+            var errorArrayOne = [];
+            var errorArrayTwo = [];
+            for(var i = 0; i<points.length; i++){
+                errorArrayOne.push("<span style='color:" + color_scale(model.findError(points[i])) + ";'>(" + Math.round(model.findError(points[i])*100)/100 + ")<sup>2</sup></span>");
+                errorArrayTwo.push("<span style='color:" + color_scale(model.findError(points[i])) + ";'>(" + Math.round(Math.pow(model.findError(points[i]), 2)*100)/100 + ")</span>");
+            }
+            var errorStringOne = errorArrayOne.join("+");
+            var errorStringTwo = errorArrayTwo.join("+");
+            return {unsolved: errorStringOne, solved: errorStringTwo};
         }
         
         //removes vertical bars from point to best-fit line
@@ -225,6 +266,11 @@ var lineFit = (function() {
             bSlider.slider("option","value",coefficients[1]);
             $('.b-label').html(Math.round(coefficients[0]*100)/100);
             $('.equation').html("y="+Math.round(coefficients[0]*100)/100+"x+("+Math.round(coefficients[0]*100)/100+")");
+            displayErrorInfo();
+            if($('.toggle-error').hasClass("selected")){
+                turnErrorDisplayOff();
+                turnErrorDisplayOn();
+            }
         });
         
         $('.toggle-error').on("click",function(){
@@ -243,19 +289,19 @@ var lineFit = (function() {
     //set up svg with axes and labels
     function setupGraph(){
 
-        chart = d3.select(".chart-container").append("svg").attr("class","chart").attr("height", outer_height).attr("width",outer_width).append("g").attr("transform","translate(" + margin.left + "," + margin.top + ")").on("mousemove", function() { move(d3.mouse(this)); }).on("click",function(){click(d3.mouse(this))});
+        chart = d3.select(".chart-container").append("svg").attr("class","chart").attr("height", outer_height).attr("width",outer_width).append("g").attr("transform","translate(" + margin.left + "," + margin.top + ")")//.on("mousemove", function() { move(d3.mouse(this)); }).on("click",function(){click(d3.mouse(this))});
         
-        function move(p2) {
-            }
-        function click(p2){
-            chart.append("circle")
-                .attr("cy",p2[1])
-                .attr("cx",p2[0])
-                .attr("fill","black")
-                .attr("r","2");
-            console.log(p2[0]-margin.left,p2[1]-margin.top);
-            model.add_point([p2[0],p2[1]]);
-        }
+//        function move(p2) {
+//            }
+//        function click(p2){
+//            chart.append("circle")
+//                .attr("cy",p2[1])
+//                .attr("cx",p2[0])
+//                .attr("fill","black")
+//                .attr("r","2");
+//            console.log(p2[0]-margin.left,p2[1]-margin.top);
+//            model.add_point([p2[0],p2[1]]);
+//        }
         chart.selectAll(".y-line").data(y_scale.ticks(10)).enter().append("line").attr("class", "y-line").attr('x1', 0).attr('x2', chart_width).attr('y1', y_scale).attr('y2',y_scale);
         
         chart.selectAll(".x-line").data(x_scale.ticks(10)).enter().append("line").attr("class", "x-line").attr('x1', x_scale).attr('x2', x_scale).attr('y1', 0).attr('y2',chart_height);
