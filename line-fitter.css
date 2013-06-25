@@ -1,6 +1,6 @@
 .chart {
     border: 1px solid gray;
-    background-color: #AFAFAF;
+    background-color: white;
 }
 
 .chart text {
@@ -13,12 +13,17 @@
 }
 
 .chart .best-fit{
-    stroke: #cc0000;
+    stroke: #0000CC;
 }
 
 .chart .error-line{
     stroke: black;
+    stroke-width: 4;
     stroke-dasharray: 2,2;
+}
+
+.chart .datapoint{
+    fill: black;
 }
 
 h2{

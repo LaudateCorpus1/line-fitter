@@ -55,15 +55,31 @@ var lineFit = (function() {
         function getCoeffs(){ //return the coefficients of the current best fit line
             return currentCoeffs;
         }
+        
         //sums the difference between where the point is and where the point would be on the line
         function findErrors(){
             var totalError = 0;
             var totalSquareError = 0;
+            var maxError = findError(pointList[0])
+            var minError = findError(pointList[0])
             for(var i=0; i<pointList.length; i++){
-                totalError += pointList[i][1]-lineAt(pointList[i][0]);
-                totalSquareError += Math.pow((pointList[i][1]-lineAt(pointList[i][0])),2);
+                iError = findError(pointList[i]); //error at the ith point
+                totalError += iError;
+                totalSquareError += Math.pow(iError,2);
+                if(maxError < iError){
+                    maxError = iError;
+                }
+                if(minError > iError){
+                    minError = iError;
+                }
             }
-            return [totalError, totalSquareError];
+            return {error: totalError, maxError: maxError, minError: minError, squareError: totalSquareError};
+        }
+        
+        //finds the vertical error between a point and the line
+        function findError(point){
+            var error = point[1]-lineAt(point[0]);
+            return error;
         }
             
         //returns the y value of the line at a point
@@ -123,7 +139,7 @@ var lineFit = (function() {
         }
         
         
-        return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, change_a: change_a, change_b: change_b, findErrors: findErrors, lineAt: lineAt, bestFit: bestFit, linear_regression: linear_regression};
+        return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, change_a: change_a, change_b: change_b, findErrors: findErrors, findError: findError, lineAt: lineAt, bestFit: bestFit, linear_regression: linear_regression};
     }
     
     function Controller(model) {
@@ -141,19 +157,24 @@ var lineFit = (function() {
         $(".controls").append("<div class='container-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><button class = 'plot-fit'>Plot Best-Fit</button> <span class='equation'>y=ax+b</span></div><div class='row-fluid'><button class = 'toggle-error'>Toggle Error Display</button><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><button class='spreadsheet'>Spreadsheet</button></div></div>");
         $(".graph").append("<div class='chart-container'></div><div class='labels'></div>");
         var aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .1, slide: function( event, ui ) {
+            turnErrorDisplayOff()
             model.change_a(ui.value);
             displayLine(model.getCoeffs());
             $('.a-label').html(ui.value);
+            turnErrorDisplayOn()
             } });
         var bSlider = $(".b-slider").slider({ min: -10, max: 10, step: .1, slide: function( event, ui ) {
+            turnErrorDisplayOff()
             model.change_b(ui.value);
             displayLine(model.getCoeffs());
             $('.b-label').html(ui.value);
-            } });
+            turnErrorDisplayOn()
+                                            } });
         aSlider.slider("disable");
         bSlider.slider("disable");
         
         setupGraph();
+        
          //takes coefficients to y=ax+b and displays the corresponding on the graph
         function displayLine(coefficients){
             chart.selectAll(".best-fit").data(coefficients).remove();
@@ -169,14 +190,18 @@ var lineFit = (function() {
                 .attr("class", "datapoint")
                 .attr("cx", x_scale(x))
                 .attr("cy", y_scale(y))
-                .attr("r", "2");
+                .attr("r", "4");
             model.add_point([x,y]);
         }
         
             
         //adds vertical bars from point to best-fit line (with color scale that displays how much error)
         function turnErrorDisplayOn(){
-            chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))});
+            var color_scale = d3.scale.linear()
+                .domain([model.findErrors().minError, model.findErrors().maxError])
+                .range(['#61A72D','#CC0000']);
+        
+            chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
         }
         
         //removes vertical bars from point to best-fit line
