@@ -11,3 +11,33 @@
 .chart line {
     stroke: #ccc;
 }
+
+.chart .best-fit{
+    stroke: #cc0000;
+}
+
+h2{
+    text-align: center;
+}
+
+.selected {
+    background-color: gray;
+}
+
+.x-adder {
+    width:20%;
+}
+.y-adder {
+    width:20%;
+}
+
+button {
+    margin: 5px;
+}
+
+.a-slider{
+    width:25%;
+}
+.b-slider{
+    width:25%;
+}
