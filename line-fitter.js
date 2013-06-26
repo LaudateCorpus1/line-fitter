@@ -160,17 +160,7 @@ var lineFit = (function() {
 
         $(".graph").append("<div class='chart-container'></div><div class='info-container'></div>");
         
-        var tooltip = d3.select("body").append("div")
-        .style("position","absolute")
-        .style("z-index",10)
-        .style("visibility","hidden")
-        .style("padding",5)
-        .style("width",200)
-        .style("height",60)
-        .style("background","#34BFDB")
-        .style("color","black")
-        .style("border","2px solid black")
-        .text("");
+        var tooltip = d3.select("body").append("div").attr("class","point-error").text("");
 
         var aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .1, slide: function( event, ui ) {
             if ($('.plot-fit').prop('checked')==true){
@@ -249,6 +239,8 @@ var lineFit = (function() {
             $(".info-container").append("<div class='row-fluid error' rel='popover' data-content=''></div><div class='row-fluid squared'></div>");
             $(".error").html("Total error: " + Math.round(model.findErrors().error*10000)/10000);
             $(".squared").html("Total squared error: " +Math.round(model.findErrors().squareError*10000)/10000);
+            
+
         }
 
         function removeErrorInfo(){
@@ -265,6 +257,9 @@ var lineFit = (function() {
         
             chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
             
+            displayErrorInfo()
+            
+                                    
             $(".error").popover({trigger: 'hover', title: "Error Value", content: makeErrorString(color_scale), html: true});
             $(".squared").popover({trigger: 'hover', title: "Sum of Squares Value", content: makeErrorSquareString(color_scale).unsolved + "<br>=</br>" + makeErrorSquareString(color_scale).solved, html: true});
         }
