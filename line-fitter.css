@@ -1,7 +1,11 @@
 .chart {
-    border: 1px solid gray;
     background-color: white;
     margin-left: 40px;
+}
+
+.hero-unit{
+    margin: 0;
+    height: 25px;
 }
 
 .chart text {
@@ -29,6 +33,7 @@
 
 h2{
     text-align: center;
+    margin: 0;
 }
 
 .selected {

@@ -160,7 +160,7 @@ var lineFit = (function() {
     }
     
     function View(div,model,controller) {       
-        div.append("<div class='row-fluid well'><h2>Line-Fitting</h2></div><div class='row-fluid'><div class='span6 graph well'></div><div class='span6 controls well'></div></div>");
+        div.append("<div class='row-fluid hero-unit'><h2>Linear Regression</h2></div><div class='row-fluid'><div class='span6 graph'></div><div class='span6 controls'></div></div>");
         $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></> <span class='equation' style = 'margin-left:10px'>y=ax+b</span></div><div class='row-fluid'><input type = 'checkbox' class = 'toggle-error'><span style = 'margin-left:5px;'>Toggle Error Display</span></input><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><button class='remove-line'>Remove Line</button></div></div></div></div><div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div>");
 
         $(".graph").append("<div class='chart-container'></div><div class='info-container'></div>");
@@ -303,16 +303,31 @@ var lineFit = (function() {
             removeErrorInfo()
         }
         
+        //initializes a table with headers
         function setupTable(){
-            $('.data-table').append("<thead><tr><th>Observed Point</th><th>Computed Point</th><th>Error</th><th>Squared Error</th></tr></thead>");
+            $('.data-table').append("<thead><tr><th>Observed Point</th><th>Predicted Point</th><th>Error</th><th>Squared Error</th></tr></thead>");
         }
-
+        
+        //adds point data to each row of table
         function updateTable(){
             $(".data-table").find("tr:gt(0)").remove();
             var points = model.get_point_list();
             for(var i = 0; i<points.length; i++){
-                $('.data-table').append("<tr><td>("+points[i][0]+", "+points[i][1]+")</td><td>("+points[i][0]+", "+round_number(model.lineAt(points[i][0]),2)+")</td><td>"+round_number(model.findError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findError(points[i]),2),2)+"</td></tr>");
+                $('.data-table').append("<tr><td contenteditable class='point-display' id='"+i+"'>("+points[i][0]+", "+points[i][1]+")</td><td>("+points[i][0]+", "+round_number(model.lineAt(points[i][0]),2)+")</td><td>"+round_number(model.findError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findError(points[i]),2),2)+"</td></tr>");
             }
+            
+            var contents = $('.point-display').html();
+            $('.point-display').blur(function() {
+                if (contents!=$(this).html()){
+                    alert($(this).html());
+                    //controller.change_point($(this).attr("id"), );
+                    contents = $(this).html();
+                }
+            });
+        }
+
+        function clearTable(){
+            $(".data-table").find("tr:gt(0)").remove();
         }
 
         //functionality to the buttons
@@ -359,7 +374,8 @@ var lineFit = (function() {
             
             aSlider.slider("disable");
             bSlider.slider("disable");
-        
+            
+            clearTable();
         });
 
         $('.toggle-error').on("click",function(){
