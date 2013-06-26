@@ -156,11 +156,8 @@ var lineFit = (function() {
     
     function View(div,model,controller) {       
         div.append("<div class='row-fluid well'><h2>Line-Fitting</h2></div><div class='row-fluid'><div class='span6 graph well'></div><div class='span6 controls well'></div></div>");
-<<<<<<< HEAD
         $(".controls").append("<div class='container-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></> <span class='equation' style = 'margin-left:10px'>y=ax+b</span></div><div class='row-fluid'><input type = 'checkbox' class = 'toggle-error'><span style = 'margin-left:5px;'>Toggle Error Display</span></input><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><button class='remove-line'>Remove Line</button><button class='spreadsheet'>Spreadsheet</button></div></div>");
-=======
-        $(".controls").append("<div class='container-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></> <span class='equation' style = 'margin-left:10px'>y=ax+b</span></div><div class='row-fluid'><input type = 'checkbox' class = 'toggle-error'><span style = 'margin-left:5px;'>Toggle Error Display</span></input><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><button class='spreadsheet'>Spreadsheet</button></div></div>");
->>>>>>> 63d6cb9992a3bd5cbb2a5531ec1cc2969e230181
+
         $(".graph").append("<div class='chart-container'></div><div class='info-container'></div>");
         
         var tooltip = d3.select("body").append("div")
@@ -177,9 +174,8 @@ var lineFit = (function() {
 
         var aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .1, slide: function( event, ui ) {
             if ($('.plot-fit').prop('checked')==true){
-<<<<<<< HEAD
                 $('.plot-fit').attr('checked', false);
-                }
+            }
             model.change_a(ui.value);
             displayLine(model.getCoeffs());
             $('.a-label').html(ui.value);
@@ -189,28 +185,12 @@ var lineFit = (function() {
                 turnErrorDisplayOn();
             }
             } 
-=======
-                model.change_a(ui.value);
-                displayLine(model.getCoeffs());
-                $('.a-label').html(ui.value);
-                displayErrorInfo()    
-                if($('.toggle-error').prop('checked')){
-                    turnErrorDisplayOff();
-                    turnErrorDisplayOn();
-                }
-                }
-                } 
->>>>>>> 63d6cb9992a3bd5cbb2a5531ec1cc2969e230181
 
         });
         var bSlider = $(".b-slider").slider({ min: -10, max: 10, step: .1, slide: function( event, ui ) {
             if ($('.plot-fit').prop('checked')==true){
-<<<<<<< HEAD
                 $('.plot-fit').attr('checked', false);
                 }
-=======
-                console.log(ui.value);
->>>>>>> 63d6cb9992a3bd5cbb2a5531ec1cc2969e230181
                 model.change_b(ui.value);
                 displayLine(model.getCoeffs());
                 $('.b-label').html(ui.value);
@@ -220,11 +200,6 @@ var lineFit = (function() {
                     turnErrorDisplayOn();
                 }
             }
-<<<<<<< HEAD
-=======
-
-            } 
->>>>>>> 63d6cb9992a3bd5cbb2a5531ec1cc2969e230181
         });
 
         aSlider.slider("disable");
@@ -248,16 +223,14 @@ var lineFit = (function() {
                 .attr("cx", x_scale(x))
                 .attr("cy", y_scale(y))
                 .on("mouseover", function(){
-<<<<<<< HEAD
                     return tooltip.html("Error: "+Math.round(model.findError([x,y])*1000)/1000+" "+" Squared Error: "+Math.round(Math.pow(model.findError([x,y]),2)*1000)/1000).style("visibility", "visible");
-=======
+                    
                     if ($('.plot-fit').prop('checked') == true){
                         return tooltip.html("Error: "+model.findError([x,y])+" "+" Squared Error: "+Math.pow(model.findError([x,y]),2)).style("visibility", "visible");
                     }
                     else{
                         return tooltip.html("Check the Plot Best-Fit box to view the error").style("visibility", "visible");
                     }
->>>>>>> 63d6cb9992a3bd5cbb2a5531ec1cc2969e230181
                 })
                 .on("mousemove", function(){
                     return tooltip.style("top",(d3.event.pageY+10)+"px").style("left",(d3.event.pageX+10)+"px");
@@ -329,7 +302,7 @@ var lineFit = (function() {
         
         //functionality to the buttons
         $('.add-point').on("click",function(){
-<<<<<<< HEAD
+
             point = [parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val())]
             addPointToGraph(point[0],point[1]);
             controller.change_best_fit_line(model.bestFit())
@@ -340,17 +313,10 @@ var lineFit = (function() {
                 turnErrorDisplayOff();
                 turnErrorDisplayOn();
             }
-=======
-            addPointToGraph(parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val()));
-            if ($('.plot-fit').prop('checked')==true){
-            displayLine(model.bestFit());
-        }
->>>>>>> 63d6cb9992a3bd5cbb2a5531ec1cc2969e230181
             
         });
         
         $('.plot-fit').on("click",function(){
-<<<<<<< HEAD
             controller.change_best_fit_line();
             var coefficients = model.getCoeffs();
             displayLine(coefficients);
@@ -365,28 +331,6 @@ var lineFit = (function() {
             if($('.toggle-error').prop("checked")==true){
                 turnErrorDisplayOff();
                 turnErrorDisplayOn();
-=======
-            if ($('.plot-fit').prop('checked') == true){
-                controller.change_best_fit_line();
-                var coefficients = model.getCoeffs();
-                displayLine(coefficients);
-                aSlider.slider("enable");
-                aSlider.slider("option","value",coefficients[0]);
-                $('.a-label').html(Math.round(coefficients[0]*100)/100);
-                bSlider.slider("enable");
-                bSlider.slider("option","value",coefficients[1]);
-                $('.b-label').html(Math.round(coefficients[0]*100)/100);
-                $('.equation').html("y="+Math.round(coefficients[0]*100)/100+"x+("+Math.round(coefficients[0]*100)/100+")");
-                displayErrorInfo();
-                if($('.toggle-error').hasClass("selected")){
-                    turnErrorDisplayOff();
-                    turnErrorDisplayOn();
-                }
->>>>>>> 63d6cb9992a3bd5cbb2a5531ec1cc2969e230181
-            }
-
-            else if ($('.plot-fit').prop('checked') == false){
-                chart.selectAll('.best-fit').remove();
             }
 
         });
@@ -397,6 +341,10 @@ var lineFit = (function() {
             
             $('.toggle-error').attr('checked',false);
             turnErrorDisplayOff();
+            
+            aSlider.slider("disable");
+            bSlider.slider("disable");
+        
         });
 
         $('.toggle-error').on("click",function(){

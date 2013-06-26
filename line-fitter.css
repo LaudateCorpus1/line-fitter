@@ -46,12 +46,14 @@ button {
     margin: 5px;
 }
 
+/*
 button:hover{
     border-radius: 5px;
     box-shadow: 2px 2px black;
     background: lightblue;
     border:2px solid green;
 }
+*/
 
 .a-slider{
     width:50%;
