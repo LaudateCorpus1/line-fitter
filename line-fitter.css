@@ -73,3 +73,8 @@ button:hover{
 .b-slider{
     width:50%;
 }
+
+table{
+    font-size: 12px;
+    margin: 5px;
+}

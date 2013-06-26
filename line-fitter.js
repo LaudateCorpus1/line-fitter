@@ -21,6 +21,7 @@ var lineFit = (function() {
     
     var x_scale = d3.scale.linear().domain([xMin,xMax]).range([0,chart_width]);
     var y_scale = d3.scale.linear().domain([yMin,yMax]).range([chart_height,0]);
+    var x_scale2 = d3.scale.linear().domain([0,chart_width]).range([xMin,xMax]);
     
     var circ;
     
@@ -31,6 +32,10 @@ var lineFit = (function() {
     
 ////////////////////////////////// helper functions    
 
+    function round_number(number,decimals){
+        return Math.round(number*Math.pow(10,decimals))/Math.pow(10,decimals)
+    }
+    
 /////////////////////////////////// set up div functions
     
     function Model() {
@@ -156,7 +161,7 @@ var lineFit = (function() {
     
     function View(div,model,controller) {       
         div.append("<div class='row-fluid well'><h2>Line-Fitting</h2></div><div class='row-fluid'><div class='span6 graph well'></div><div class='span6 controls well'></div></div>");
-        $(".controls").append("<div class='container-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></> <span class='equation' style = 'margin-left:10px'>y=ax+b</span></div><div class='row-fluid'><input type = 'checkbox' class = 'toggle-error'><span style = 'margin-left:5px;'>Toggle Error Display</span></input><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><button class='remove-line'>Remove Line</button><button class='spreadsheet'>Spreadsheet</button></div></div>");
+        $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></> <span class='equation' style = 'margin-left:10px'>y=ax+b</span></div><div class='row-fluid'><input type = 'checkbox' class = 'toggle-error'><span style = 'margin-left:5px;'>Toggle Error Display</span></input><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><button class='remove-line'>Remove Line</button></div></div></div></div><div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div>");
 
         $(".graph").append("<div class='chart-container'></div><div class='info-container'></div>");
         
@@ -196,7 +201,8 @@ var lineFit = (function() {
         bSlider.slider("disable");
         
         setupGraph();
-        
+        setupTable();
+
          //takes coefficients to y=ax+b and displays the corresponding on the graph
         function displayLine(coefficients){
             chart.selectAll(".best-fit").data(coefficients).remove();
@@ -205,6 +211,8 @@ var lineFit = (function() {
             var y2 = coefficients[0]*xMax+coefficients[1];
             
             chart.selectAll(".best-fit").data(coefficients).enter().append("line").attr("class", "best-fit").attr('x1', x_scale(xMin)).attr('x2', x_scale(xMax)).attr('y1', y_scale(y1)).attr('y2',y_scale(y2));
+            
+            updateTable();
         }
         //adds a circular point of radius 2px at coordinates (x,y) to the svg canvas
         function addPointToGraph(x,y){
@@ -295,6 +303,18 @@ var lineFit = (function() {
             removeErrorInfo()
         }
         
+        function setupTable(){
+            $('.data-table').append("<thead><tr><th>Observed Point</th><th>Computed Point</th><th>Error</th><th>Squared Error</th></tr></thead>");
+        }
+
+        function updateTable(){
+            $(".data-table").find("tr:gt(0)").remove();
+            var points = model.get_point_list();
+            for(var i = 0; i<points.length; i++){
+                $('.data-table').append("<tr><td>("+points[i][0]+", "+points[i][1]+")</td><td>("+points[i][0]+", "+round_number(model.lineAt(points[i][0]),2)+")</td><td>"+round_number(model.findError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findError(points[i]),2),2)+"</td></tr>");
+            }
+        }
+
         //functionality to the buttons
         $('.add-point').on("click",function(){
 
@@ -399,7 +419,8 @@ var lineFit = (function() {
     }; 
     
     exports.setup = setup;
-    
+    exports.round_number = round_number;
+
     return exports;
 }());
 
