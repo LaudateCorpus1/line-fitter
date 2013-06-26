@@ -45,7 +45,6 @@ var lineFit = (function() {
         }
         function change_line(newCoeffs){ //change the coefficients of the best fit line
             currentCoeffs = newCoeffs;
-            return currentCoeffs;
         }
         function change_a(a){
             currentCoeffs[0] = a;
@@ -293,7 +292,9 @@ var lineFit = (function() {
         //functionality to the buttons
         $('.add-point').on("click",function(){
             addPointToGraph(parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val()));
-            console.log(displayLine(model.bestFit()));
+            if ($('.plot-fit').prop('checked')==true){
+            displayLine(model.bestFit());
+        }
             
         });
         
