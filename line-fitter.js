@@ -84,7 +84,7 @@ var lineFit = (function() {
             
         //returns the y value of the line at a point
         function lineAt(x){
-            return currentCoeffs[0]*x+currentCoeffs[1]
+            return (currentCoeffs[0]*x)+currentCoeffs[1];
         }
             
         //finds the best fit for the points on the graph
@@ -154,28 +154,51 @@ var lineFit = (function() {
     
     function View(div,model,controller) {       
         div.append("<div class='row-fluid well'><h2>Line-Fitting</h2></div><div class='row-fluid'><div class='span6 graph well'></div><div class='span6 controls well'></div></div>");
-        $(".controls").append("<div class='container-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><button class = 'plot-fit'>Plot Best-Fit</button> <span class='equation'>y=ax+b</span></div><div class='row-fluid'><button class = 'toggle-error'>Toggle Error Display</button><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><button class='spreadsheet'>Spreadsheet</button></div></div>");
+        $(".controls").append("<div class='container-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></> <span class='equation' style = 'margin-left:10px'>y=ax+b</span></div><div class='row-fluid'><input type = 'checkbox' class = 'toggle-error'><span style = 'margin-left:5px;'>Toggle Error Display</span></input><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><button class='spreadsheet'>Spreadsheet</button></div></div>");
         $(".graph").append("<div class='chart-container'></div><div class='info-container'></div>");
+        
+        var tooltip = d3.select("body").append("div")
+        .style("position","absolute")
+        .style("z-index",10)
+        .style("visibility","hidden")
+        .style("padding",5)
+        .style("width",200)
+        .style("height",60)
+        .style("background","#34BFDB")
+        .style("color","black")
+        .style("border","2px solid black")
+        .text("");
+
         var aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .1, slide: function( event, ui ) {
-            model.change_a(ui.value);
-            displayLine(model.getCoeffs());
-            $('.a-label').html(ui.value);
-            displayErrorInfo()    
-            if($('.toggle-error').hasClass("selected")){
-                turnErrorDisplayOff();
-                turnErrorDisplayOn();
-            }
-            } });
+            if ($('.plot-fit').prop('checked')==true){
+                model.change_a(ui.value);
+                displayLine(model.getCoeffs());
+                $('.a-label').html(ui.value);
+                displayErrorInfo()    
+                if($('.toggle-error').prop('checked')){
+                    turnErrorDisplayOff();
+                    turnErrorDisplayOn();
+                }
+                }
+                } 
+
+        });
         var bSlider = $(".b-slider").slider({ min: -10, max: 10, step: .1, slide: function( event, ui ) {
-            model.change_b(ui.value);
-            displayLine(model.getCoeffs());
-            $('.b-label').html(ui.value);
-            displayErrorInfo()
-            if($('.toggle-error').hasClass("selected")){
-                turnErrorDisplayOff();
-                turnErrorDisplayOn();
+            if ($('.plot-fit').prop('checked')==true){
+                console.log(ui.value);
+                model.change_b(ui.value);
+                displayLine(model.getCoeffs());
+                $('.b-label').html(ui.value);
+                displayErrorInfo()
+                if($('.toggle-error').prop('checked')){
+                    turnErrorDisplayOff();
+                    turnErrorDisplayOn();
+                }
             }
-                                            } });
+
+            } 
+        });
+
         aSlider.slider("disable");
         bSlider.slider("disable");
         
@@ -196,6 +219,21 @@ var lineFit = (function() {
                 .attr("class", "datapoint")
                 .attr("cx", x_scale(x))
                 .attr("cy", y_scale(y))
+                .on("mouseover", function(){
+                    if ($('.plot-fit').prop('checked') == true){
+                        return tooltip.html("Error: "+model.findError([x,y])+" "+" Squared Error: "+Math.pow(model.findError([x,y]),2)).style("visibility", "visible");
+                    }
+                    else{
+                        return tooltip.html("Check the Plot Best-Fit box to view the error").style("visibility", "visible");
+                    }
+                })
+                .on("mousemove", function(){
+                    return tooltip.style("top",(d3.event.pageY+10)+"px").style("left",(d3.event.pageX+10)+"px");
+                })
+                .on("mouseout",function(){
+                    return tooltip.style("visibility", "hidden");
+                })
+                .style("fill","blue")
                 .attr("r", "4");
             model.add_point([x,y]);
         }
@@ -229,7 +267,7 @@ var lineFit = (function() {
             }
             var errorString = errorArray.join("+");
             return errorString;
-        }
+        }   
         
         //returns a string that shows how the sum of squares error was calculated by color
         function makeErrorSquareString(color_scale){
@@ -256,21 +294,28 @@ var lineFit = (function() {
         });
         
         $('.plot-fit').on("click",function(){
-            controller.change_best_fit_line();
-            var coefficients = model.getCoeffs();
-            displayLine(coefficients);
-            aSlider.slider("enable");
-            aSlider.slider("option","value",coefficients[0]);
-            $('.a-label').html(Math.round(coefficients[0]*100)/100);
-            bSlider.slider("enable");
-            bSlider.slider("option","value",coefficients[1]);
-            $('.b-label').html(Math.round(coefficients[0]*100)/100);
-            $('.equation').html("y="+Math.round(coefficients[0]*100)/100+"x+("+Math.round(coefficients[0]*100)/100+")");
-            displayErrorInfo();
-            if($('.toggle-error').hasClass("selected")){
-                turnErrorDisplayOff();
-                turnErrorDisplayOn();
+            if ($('.plot-fit').prop('checked') == true){
+                controller.change_best_fit_line();
+                var coefficients = model.getCoeffs();
+                displayLine(coefficients);
+                aSlider.slider("enable");
+                aSlider.slider("option","value",coefficients[0]);
+                $('.a-label').html(Math.round(coefficients[0]*100)/100);
+                bSlider.slider("enable");
+                bSlider.slider("option","value",coefficients[1]);
+                $('.b-label').html(Math.round(coefficients[0]*100)/100);
+                $('.equation').html("y="+Math.round(coefficients[0]*100)/100+"x+("+Math.round(coefficients[0]*100)/100+")");
+                displayErrorInfo();
+                if($('.toggle-error').hasClass("selected")){
+                    turnErrorDisplayOff();
+                    turnErrorDisplayOn();
+                }
             }
+
+            else if ($('.plot-fit').prop('checked') == false){
+                chart.selectAll('.best-fit').remove();
+            }
+
         });
         
         $('.toggle-error').on("click",function(){
