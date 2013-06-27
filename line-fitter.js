@@ -402,6 +402,7 @@ var lineFit = (function() {
     
         var move =  d3.behavior.drag()
                     .on("drag",drag)
+<<<<<<< HEAD
                     // .on("dragstart",function(){
                     //     var dragPoint = d3.select(this);
                     //     xVal = x_scale2(parseInt(dragPoint.attr("cx")));
@@ -411,6 +412,16 @@ var lineFit = (function() {
                     // })
                     .on("dragend",function(){
                         dict.length = 0;
+=======
+                    .on("dragstart",function(){
+                        var dragPoint = d3.select(this);
+                        xVal = x_scale2(parseInt(dragPoint.attr("cx")));
+                        yVal = y_scale2(parseInt(dragPoint.attr("cy")));
+                        index = model.getIndexOf(round_number(xVal,2),round_number(yVal,2));
+                        console.log(index);
+                    })
+                    .on("dragend",function(){
+>>>>>>> f85edbdbbfe9eda310bed9cfcb6bacc33b05955a
                         var dragPoint = d3.select(this);
                         var newX = round_number(x_scale2(parseInt(dragPoint.attr("cx"))),2);
                         var newY = round_number(y_scale2(parseInt(dragPoint.attr("cy"))),2);
