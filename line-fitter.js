@@ -214,7 +214,7 @@ var lineFit = (function() {
                 .range(['#61A72D','#CC0000']);
         
         div.append("<div class='container-fluid'><div class='row-fluid'><div class='span12 hero-unit'><h2>Linear Regression</h2></div></div><div class='row-fluid'><div class='span12 well'><div class='span8 graph'></div><div class='span4 controls'></div></div></div></div>");
-        $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br></div></div></div><div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div>");
+        $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br></div></div></div><div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div>");
         //<button class='remove-line'>Remove Line</button>
         
         
@@ -233,6 +233,7 @@ var lineFit = (function() {
             turnErrorDisplayOff();
             turnErrorDisplayOn();
             graph()
+            updateEquation();
             } 
 
         });
@@ -248,6 +249,7 @@ var lineFit = (function() {
                     turnErrorDisplayOff();
                     turnErrorDisplayOn();
                     graph();
+                    updateEquation();
             },
         });
 
@@ -308,16 +310,22 @@ var lineFit = (function() {
             updateTable();
             turnErrorDisplayOff();
             turnErrorDisplayOn();
+            updateEquation();
             graph();
         }
         
         //shows the total error and sum of squares error
         function displayErrorInfo(){
             $(".info-container").empty();
-            $(".info-container").append("<div class='row-fluid squared'></div>");
+            $(".info-container").append("<div class='row-fluid'><span class = 'squared'></span></div>");
             //$(".error").html("Total error: " + round_number(model.findErrors().error,2));
             $(".squared").html("Total squared error: " +round_number(model.findErrors().squareError,2));
             
+        }
+        
+        function updateEquation(){
+            var coefficients = model.getCoeffs();
+            $('.equation').html("y = "+round_number(coefficients[0],2)+"x + (" + round_number(coefficients[1],2) + ")");
         }
 
         function removeErrorInfo(){
@@ -454,7 +462,7 @@ var lineFit = (function() {
                 
             graph_chart.selectAll(".y-scale-label").data(graph_y_scale.ticks(4)).enter().append("text").attr("class", "y-scale-label").attr("x",graph_margin.left/2).attr('y',graph_y_scale).attr("text-anchor","end").attr("dy","0.3em").attr("dx",-graph_margin.left/2).text(function(d){return d});
             
-            graph_chart.selectAll(".chart-title").data([1]).enter().append("text").attr("class", "chart-title").attr("x",-10).attr('y',-10).text(title);
+            graph_chart.selectAll(".chart-title").data([1]).enter().append("text").attr("class", "chart-title").attr("x",0).attr('y',0).text(title);
             
             if(data.length>0){
                 var stack = d3.layout.stack();
@@ -490,7 +498,8 @@ var lineFit = (function() {
             bSlider.slider("enable");
             bSlider.slider("option","value",coefficients[1]);
             $('.b-label').html(Math.round(coefficients[0]*100)/100);
-            $('.equation').html("y="+Math.round(coefficients[0]*100)/100+"x+("+Math.round(coefficients[0]*100)/100+")");
+            
+            updateEquation();
             displayErrorInfo();
             turnErrorDisplayOff();
             turnErrorDisplayOn();
