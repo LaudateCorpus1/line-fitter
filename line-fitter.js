@@ -43,6 +43,19 @@ var lineFit = (function() {
         function add_point(point){ // add a point
             pointList.push(point);
         }
+        function remove_point(index){
+            pointList.splice(index,1);
+        }
+        
+        function getIndexOf(x,y){
+            for (var i = 0; i < pointList.length; i++) {
+                if(round_number(pointList[i][0],2) == x && round_number(pointList[i][1],2) == y)
+                    return i;
+            };
+
+            return -1;
+        };
+        
         function get_point_list(){
             return pointList;
         }
@@ -215,7 +228,7 @@ var lineFit = (function() {
         return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, 
             change_a: change_a, change_b: change_b, findErrors: findErrors, findError: findError, lineAt: lineAt, bestFit: bestFit, 
             linear_regression: linear_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, 
-            points_with_square_error: points_with_square_error, getIndexOf:getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points};
+            points_with_square_error: points_with_square_error, getIndexOf:getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, remove_point: remove_point, getIndexOf: getIndexOf};
     }
     
     function Controller(model) {
@@ -381,37 +394,37 @@ var lineFit = (function() {
             //$(".error").popover({trigger: 'hover', title: "Error Value", content: makeErrorString(color_scale), html: true});
             $(".squared").popover({trigger: 'hover', title: "Sum of Squares Value", content: makeErrorSquareString(color_scale).unsolved + "<br>=</br>" + makeErrorSquareString(color_scale).solved, html: true});
         }
-
         
-
+        var xVal, yVal, index;
+    
         var move =  d3.behavior.drag()
                     .on("drag",drag)
-                    .on("dragend",function(){
-                        var oldX = Math.round(dict[0].x)
-                        var oldY = Math.round(dict[0].y)
-                        var index = (model.getIndexOf(oldX,oldY));
-                        // console.log(oldX+","+oldY); 
-                        console.log(index);
-                        dict.length = 0;
+                    .on("dragstart",function(){
                         var dragPoint = d3.select(this);
-                        var newX = x_scale2(parseInt(dragPoint.attr("cx")));
-                        var newY = y_scale2(parseInt(dragPoint.attr("cy")));
-                        model.get_point_list()[index] = [newX,newY];
-                        console.log(model.get_point_list()[index]);
-                        // model.add_point([newX,newY]);
+                        xVal = x_scale2(parseInt(dragPoint.attr("cx")));
+                        yVal = y_scale2(parseInt(dragPoint.attr("cy")));
+                        index = model.getIndexOf(round_number(xVal,2),round_number(yVal,2));
+                        console.log(index);
 
-                        // need a remove function or some way to remove the point that was being dragged around from the table and 
-                        //add the point we arrived to to the index of the removed point???
-                        addPointToGraph(newX,newY); 
-                        displayLine(model.bestFit());
+                    })
+                    .on("dragend",function(){
+                        var dragPoint = d3.select(this);
+                        var newX = round_number(x_scale2(parseInt(dragPoint.attr("cx"))),2);
+                        var newY = round_number(y_scale2(parseInt(dragPoint.attr("cy"))),2);
+                        model.add_point([newX,newY]);
+                        console.log(index);
+                        model.remove_point(index)
+                        console.log(xVal, yVal);
+                        updateDisplay();
+                        
                     
                 });
 
             function drag(){
                 
                 var dragPoint = d3.select(this);
-                var xVal = x_scale2(parseInt(dragPoint.attr("cx")));
-                var yVal = y_scale2(parseInt(dragPoint.attr("cy")));
+                xVal = x_scale2(parseInt(dragPoint.attr("cx")));
+                yVal = y_scale2(parseInt(dragPoint.attr("cy")));
                 dict.push({'x':xVal,'y':yVal});
                 dragPoint
                 .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
