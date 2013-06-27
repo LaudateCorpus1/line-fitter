@@ -335,13 +335,19 @@ var lineFit = (function() {
         var move =  d3.behavior.drag()
                     .on("drag",drag)
                     .on("dragend",function(){
-                        console.log(model.getIndexOf(-3,6));
                         var oldX = Math.round(dict[0].x)
                         var oldY = Math.round(dict[0].y)
-                        console.log(oldX+","+oldY); 
+                        var index = (model.getIndexOf(oldX,oldY));
+                        // console.log(oldX+","+oldY); 
+                        console.log(index);
+                        dict.length = 0;
                         var dragPoint = d3.select(this);
                         var newX = x_scale2(parseInt(dragPoint.attr("cx")));
                         var newY = y_scale2(parseInt(dragPoint.attr("cy")));
+                        model.get_point_list()[index] = [newX,newY];
+                        console.log(model.get_point_list()[index]);
+                        // model.add_point([newX,newY]);
+
                         // need a remove function or some way to remove the point that was being dragged around from the table and 
                         //add the point we arrived to to the index of the removed point???
                         addPointToGraph(newX,newY); 
