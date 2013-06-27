@@ -9,12 +9,12 @@
 }
 
 .chart text {
-    fill: #495961;
+    fill: #AAAAAA;
     font: 10px sans-serif;
 }
 
 .chart line {
-    stroke: #ccc;
+    stroke: #EEEEEE;
 }
 
 .chart .best-fit{
@@ -69,7 +69,7 @@ button:hover{
     height: 60;
     background: #F5F5F5;
     color: black;
-    border: 2px solid black;
+/*    border: 2px solid black;*/
 }
 
 .a-slider{
