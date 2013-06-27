@@ -45,7 +45,6 @@ var lineFit = (function() {
         function add_point(point){ // add a point
             pointList.push(point);
         }
-<<<<<<< HEAD
         function remove_point(index){
             pointList.splice(index,1);
         }
@@ -59,9 +58,6 @@ var lineFit = (function() {
             return -1;
         };
         
-=======
-
->>>>>>> 415a32b7bc351d175f1a408d540e119f37e8e461
         function get_point_list(){
             return pointList;
         }
@@ -413,33 +409,12 @@ var lineFit = (function() {
     
         var move =  d3.behavior.drag()
                     .on("drag",drag)
-<<<<<<< HEAD
                     .on("dragstart",function(){
                         var dragPoint = d3.select(this);
                         xVal = x_scale2(parseInt(dragPoint.attr("cx")));
                         yVal = y_scale2(parseInt(dragPoint.attr("cy")));
                         index = model.getIndexOf(round_number(xVal,2),round_number(yVal,2));
                         console.log(index);
-=======
-                    .on("dragend",function(){
-                        
-                        
-                        dict.length = 0;
-                        console.log(oldX+","+oldY); 
-                        var index = (model.getIndexOf(oldX,oldY));
-                        console.log(index);
-                        var dragPoint = d3.select(this);
-                        var roundedNewX = round_number(x_scale2(parseInt(dragPoint.attr("cx"))),0);
-                        var roundedNewY = round_number(y_scale2(parseInt(dragPoint.attr("cy"))),0);
-                        var newX = x_scale2(parseInt(dragPoint.attr("cx")));
-                        var newY = y_scale2(parseInt(dragPoint.attr("cy")));
-                        delete model.get_point_list()[index];
-                        removePointFromGraph(oldX,oldY,index);
-                        model.get_point_list()[index] = [roundedNewX,roundedNewY];
-                        console.log(model.get_point_list());
-                        // model.add_point([newX,newY]);
->>>>>>> 415a32b7bc351d175f1a408d540e119f37e8e461
-
                     })
                     .on("dragend",function(){
                         var dragPoint = d3.select(this);
