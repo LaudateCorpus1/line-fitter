@@ -28,6 +28,7 @@ var lineFit = (function() {
     var dict = [];
     var oldX;
     var oldY;
+    var index;
     
     
 ////////////////////////////////// helper functions    
@@ -51,7 +52,7 @@ var lineFit = (function() {
         
         function getIndexOf(x,y){
             for (var i = 0; i < pointList.length; i++) {
-                if(round_number(pointList[i][0],2) == x && round_number(pointList[i][1],2) == y)
+                if(pointList[i][0] == x && pointList[i][1] == y)
                     return i;
             };
 
@@ -331,14 +332,6 @@ var lineFit = (function() {
                 .call(move)
                 .attr("r", "4");
         }
-
-        function removePointFromGraph(x,y){
-            chart.selectAll(".datapoint")
-            .attr("cx", x_scale(x))
-            .attr("cy", y_scale(y))
-            .remove();
-
-        }
         
         //shows the total error and sum of squares error
         function displayErrorInfo(){
@@ -372,25 +365,28 @@ var lineFit = (function() {
             $(".squared").popover({trigger: 'hover', title: "Sum of Squares Value", content: makeErrorSquareString(color_scale).unsolved + "<br>=</br>" + makeErrorSquareString(color_scale).solved, html: true});
         }
         
-        var xVal, yVal, index;
+        var xVal, yVal;
     
         var move =  d3.behavior.drag()
                     .on("drag",drag)
-                    .on("dragstart",function(){
-                        var dragPoint = d3.select(this);
-                        xVal = x_scale2(parseInt(dragPoint.attr("cx")));
-                        yVal = y_scale2(parseInt(dragPoint.attr("cy")));
-                        index = model.getIndexOf(round_number(xVal,2),round_number(yVal,2));
-                        console.log(index);
-                    })
+                    // .on("dragstart",function(){
+                    //     var dragPoint = d3.select(this);
+                    //     xVal = x_scale2(parseInt(dragPoint.attr("cx")));
+                    //     yVal = y_scale2(parseInt(dragPoint.attr("cy")));
+                    //     index = model.getIndexOf(round_number(xVal,2),round_number(yVal,2));
+                    //     console.log(index);
+                    // })
                     .on("dragend",function(){
+                        dict.length = 0;
                         var dragPoint = d3.select(this);
                         var newX = round_number(x_scale2(parseInt(dragPoint.attr("cx"))),2);
                         var newY = round_number(y_scale2(parseInt(dragPoint.attr("cy"))),2);
+                        console.log([oldX,oldY]);
+                        var index = model.getIndexOf(oldX,oldY);                        
+                        model.remove_point(index)
                         model.add_point([newX,newY]);
                         console.log(index);
-                        model.remove_point(index)
-                        console.log(xVal, yVal);
+                        // console.log(xVal, yVal);
                         updateDisplay();
                         
                     
@@ -570,7 +566,7 @@ var lineFit = (function() {
         var points = [[4,4],[1,1],[2,1],[-3,6]];
         for(var i =0; i<points.length; i++){
             model.add_point([points[i][0],points[i][1]]);
-            console.log(model.get_point_list());
+            // console.log(model.get_point_list());
         }
         view.updateDisplay();
     }; 
