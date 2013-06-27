@@ -358,6 +358,7 @@ var lineFit = (function() {
             point = [parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val())]
             addPointToGraph(point[0],point[1]);
             if ($('.plot-fit').prop('checked')==true){
+                controller.change_best_fit_line();
                 displayLine(model.bestFit());
             }
             turnErrorDisplayOff();
