@@ -1,11 +1,15 @@
+body{
+    font-size: 11px;
+    background-color:#4C4C4C;
+}
 .chart {
     background-color: white;
     margin-left: 40px;
 }
 
+
 .hero-unit{
     margin: 0;
-    height: 25px;
 }
 
 .chart text {
@@ -73,13 +77,14 @@ button:hover{
 }
 
 .a-slider{
-    width:50%;
+    width:60%;
 }
 .b-slider{
-    width:50%;
+    width:60%;
 }
 
 table{
-    font-size: 12px;
+    width: 80%;
+    font-size: 10px;
     margin: 5px;
 }

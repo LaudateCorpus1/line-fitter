@@ -29,9 +29,6 @@ var lineFit = (function() {
     var oldX;
     var oldY;
     
-    //keeping track of data points
-    var points = [];
-    
     
 ////////////////////////////////// helper functions    
 
@@ -63,6 +60,28 @@ var lineFit = (function() {
         }
         function getCoeffs(){ //return the coefficients of the current best fit line
             return currentCoeffs;
+        }
+        
+        function randomize_points(number){
+            pointList = [];
+            for(var i=0; i<number; i++){
+                pointList.push(make_random_point());
+            }
+            return pointList;
+        }
+        
+        function make_random_point(){
+            var x = Math.random()*xMax;
+            var isNeg = Math.random();
+            if(isNeg>0.5){
+                x = (-1)*x;
+            }
+            var y = Math.random()*yMax;
+            isNeg = Math.random();
+            if(isNeg>0.5){
+                y = (-1)*y;
+            }
+            return [x,y]
         }
         
         //sums the difference between where the point is and where the point would be on the line
@@ -102,7 +121,7 @@ var lineFit = (function() {
                     return i;
             };
 
-            return 'asdsa';
+            return -1;
         };
 
         function sumOfSquares(){
@@ -117,6 +136,14 @@ var lineFit = (function() {
             var new_list = [];
             for(var i=0; i<pointList.length; i++){
                 new_list.push([{y: Math.pow(findError(pointList[i]),2)}])
+            }
+            return new_list;
+        }
+        
+        function points_with_abs_error(){
+            var new_list = [];
+            for(var i=0; i<pointList.length; i++){
+                new_list.push([{y: findError(pointList[i])}])
             }
             return new_list;
         }
@@ -191,7 +218,7 @@ var lineFit = (function() {
         return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, 
             change_a: change_a, change_b: change_b, findErrors: findErrors, findError: findError, lineAt: lineAt, bestFit: bestFit, 
             linear_regression: linear_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, 
-            points_with_square_error: points_with_square_error, getIndexOf:getIndexOf};
+            points_with_square_error: points_with_square_error, getIndexOf:getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points};
     }
     
     function Controller(model) {
@@ -211,11 +238,12 @@ var lineFit = (function() {
                 .domain([0, yMax])
                 .range(['#61A72D','#CC0000']);
         
-        div.append("<div class='row-fluid hero-unit'><h2>Linear Regression</h2></div><div class='row-fluid well'><div class='span6 graph'></div><div class='span6 controls'></div></div>");
-        $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><div class='row-fluid'></div></div></div></div><div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div>");
+        div.append("<div class='container-fluid'><div class='row-fluid'><div class='span12 hero-unit'><h2>Linear Regression</h2></div></div><div class='row-fluid'><div class='span12 well'><div class='span8 graph'></div><div class='span4 controls'></div></div></div></div>");
+        $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point'>Add Point</button><button class = 'btn btn-small randomize'>Randomize Points</button><br></br></div></div></div><div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div>");
         //<button class='remove-line'>Remove Line</button>
         
-        $(".graph").append("<div class='chart-container'></div><div class='info-container'></div><div class='graph-container'></div>");
+        
+        $(".graph").append("<div class='row-fluid'><div class='span8 chart-container'></div><div class='span4 graph-container'></div></div><div class='info-container'></div>");
         
         var tooltip = d3.select("body").append("div").attr("class","point-error").text("");
 
@@ -230,10 +258,11 @@ var lineFit = (function() {
             turnErrorDisplayOff();
             turnErrorDisplayOn();
             graph()
+            updateEquation();
             } 
 
         });
-        var bSlider = $(".b-slider").slider({ min: -10, max: 10, step: .01,
+        var bSlider = $(".b-slider").slider({ min: 1.5*yMin, max: 1.5*yMax, step: .01,
             slide: function( event, ui ) {
                 if ($('.plot-fit').prop('checked')==true){
                     $('.plot-fit').attr('checked', false);
@@ -244,6 +273,8 @@ var lineFit = (function() {
                     displayErrorInfo()
                     turnErrorDisplayOff();
                     turnErrorDisplayOn();
+                    graph();
+                    updateEquation();
             },
         });
 
@@ -283,13 +314,6 @@ var lineFit = (function() {
                 .attr("cy", y_scale(y))
                 .on("mouseover", function(){
                     return tooltip.html("Error: "+Math.round(model.findError([x,y])*1000)/1000+" "+" Squared Error: "+Math.round(Math.pow(model.findError([x,y]),2)*1000)/1000).style("visibility", "visible");
-                    
-                    // if ($('.plot-fit').prop('checked') == true){
-                    //     return tooltip.html("Error: "+model.findError([x,y])+" "+" Squared Error: "+Math.pow(model.findError([x,y]),2)).style("visibility", "visible");
-                    // }
-                    // else{
-                    //     return tooltip.html("Check the Plot Best-Fit box to view the error").style("visibility", "visible");
-                    // }
                 })
                 .on("mousemove", function(){
                     return tooltip.style("top",(d3.event.pageY+10)+"px").style("left",(d3.event.pageX+10)+"px");
@@ -304,6 +328,29 @@ var lineFit = (function() {
             updateTable();
             turnErrorDisplayOff();
             turnErrorDisplayOn();
+            updateEquation();
+            graph();
+        }
+
+        function updatePointsOnGraph(){
+            chart.selectAll(".datapoint").remove();
+            var points = model.get_point_list()
+            chart.selectAll(".endpoint").data(points).enter().append("circle")
+                .attr("class", "datapoint")
+                .attr("cx", function(d){return x_scale(d[0])})
+                .attr("cy", function(d){return y_scale(d[1])})
+                .on("mouseover", function(d){
+                    return tooltip.html("Error: "+Math.round(model.findError([d[0],d[1]])*1000)/1000+" "+" Squared Error: "+Math.round(Math.pow(model.findError([d[0],d[1]]),2)*1000)/1000).style("visibility", "visible");
+                })
+                .on("mousemove", function(){
+                    return tooltip.style("top",(d3.event.pageY+10)+"px").style("left",(d3.event.pageX+10)+"px");
+                })
+                .on("mouseout",function(){
+                    return tooltip.style("visibility", "hidden");
+                })
+                .style("fill","blue")
+                .call(move)
+                .attr("r", "4");
         }
 
         function removePointFromGraph(x,y){
@@ -317,15 +364,20 @@ var lineFit = (function() {
         //shows the total error and sum of squares error
         function displayErrorInfo(){
             $(".info-container").empty();
-            $(".info-container").append("<div class='row-fluid error' rel='popover' data-content=''></div><div class='row-fluid squared'></div>");
-            $(".error").html("Total error: " + round_number(model.findErrors().error,2));
+            $(".info-container").append("<div class='row-fluid'><span class = 'squared'></span></div>");
+            //$(".error").html("Total error: " + round_number(model.findErrors().error,2));
             $(".squared").html("Total squared error: " +round_number(model.findErrors().squareError,2));
             
+        }
+        
+        function updateEquation(){
+            var coefficients = model.getCoeffs();
+            $('.equation').html("y = "+round_number(coefficients[0],2)+"x + (" + round_number(coefficients[1],2) + ")");
         }
 
         function removeErrorInfo(){
             $(".info-container").empty();
-            $(".error").popover('disable');
+            //$(".error").popover('disable');
             $(".squared").popover('disable');
         }
             
@@ -337,7 +389,7 @@ var lineFit = (function() {
             displayErrorInfo()
             
                                     
-            $(".error").popover({trigger: 'hover', title: "Error Value", content: makeErrorString(color_scale), html: true});
+            //$(".error").popover({trigger: 'hover', title: "Error Value", content: makeErrorString(color_scale), html: true});
             $(".squared").popover({trigger: 'hover', title: "Sum of Squares Value", content: makeErrorSquareString(color_scale).unsolved + "<br>=</br>" + makeErrorSquareString(color_scale).solved, html: true});
         }
 
@@ -426,7 +478,7 @@ var lineFit = (function() {
             clearTable()
             var points = model.get_point_list();
             for(var i = 0; i<points.length; i++){
-                $('.data-table').append("<tr><td contenteditable class='x-display' id='"+i+"'>"+points[i][0]+"</td><td contenteditable class='y-display' id='"+i+"'>"+points[i][1]+"</td><td>"+round_number(model.lineAt(points[i][0]),2)+"</td><td>"+round_number(model.findError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findError(points[i]),2),2)+"</td></tr>");
+                $('.data-table').append("<tr><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.lineAt(points[i][0]),2)+"</td><td>"+round_number(model.findError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findError(points[i]),2),2)+"</td></tr>");
             }
             
             var contents = $('.x-display').html();
@@ -449,8 +501,9 @@ var lineFit = (function() {
             var maxValue = model.get_variance()*5;
             var title = "Sum of Squares";
             var data = model.points_with_square_error();
+            var normal_error = model.points_with_abs_error();
             
-            var graph_outer_width = parseInt($(".graph").css("width"))-38;
+            var graph_outer_width = parseInt($(".graph-container").css("width"))*0.8;
             var graph_outer_height = 300;
             var graph_margin = { top: graph_outer_width/8, right: graph_outer_width/8, bottom: graph_outer_width/8, left: graph_outer_width/8 }
             var graph_chart_width = graph_outer_width - graph_margin.left - graph_margin.right;
@@ -462,96 +515,67 @@ var lineFit = (function() {
                 
             graph_chart.selectAll(".y-scale-label").data(graph_y_scale.ticks(4)).enter().append("text").attr("class", "y-scale-label").attr("x",graph_margin.left/2).attr('y',graph_y_scale).attr("text-anchor","end").attr("dy","0.3em").attr("dx",-graph_margin.left/2).text(function(d){return d});
             
-            graph_chart.selectAll(".chart-title").data([1]).enter().append("text").attr("class", "chart-title").attr("x",-10).attr('y',-10).text(title);
+            graph_chart.selectAll(".chart-title").data([1]).enter().append("text").attr("class", "chart-title").attr("x",0).attr('y',0).text(title);
             
             if(data.length>0){
                 var stack = d3.layout.stack();
                 var stacked_data = stack(data);
-                console.log(stacked_data)
                 var layer_groups = graph_chart.selectAll(".layer").data(stacked_data).enter().append("g").attr("class", "layer");
                 
-                var rects = layer_groups.selectAll('rect').data(function(d){return d}).enter().append('rect').attr("x",0).style("fill", function(d, i, j) { return color_scale(j);}).attr("height", 0).attr("y", function(d){return graph_y_scale(d.y0)}).transition().duration(500).delay(function(d,i,j){return j*450}).attr("y", function(d){return graph_y_scale(d.y0+d.y)}).attr("width", graph_chart_width).attr("height", function(d){ return graph_y_scale(d.y0) - graph_y_scale(d.y0+d.y); });
+                var rects = layer_groups.selectAll('rect').data(function(d){return d}).enter().append('rect').attr("x",0).style("fill", function(d, i, j) {return color_scale(normal_error[j][0].y);}).attr("height", 0).attr("y", function(d){return graph_y_scale(d.y0)}).attr("y", function(d){return graph_y_scale(d.y0+d.y)}).attr("width", graph_chart_width).attr("height", function(d){ return graph_y_scale(d.y0) - graph_y_scale(d.y0+d.y); });
             }
             
 
       }
-        //functionality to the buttons
-        $('.add-point').on("click",function(){
-
-            point = [parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val())]
-            addPointToGraph(point[0],point[1]);
-            if ($('.plot-fit').prop('checked')==true){
-                controller.change_best_fit_line();
-                displayLine(model.bestFit());
-            }
-            turnErrorDisplayOff();
-            turnErrorDisplayOn();
-            
-        });
         
-        $('.plot-fit').on("click",function(){
+        function updateBestFitDisplay(){
             controller.change_best_fit_line();
             var coefficients = model.getCoeffs();
             displayLine(coefficients);
-            aSlider.slider("enable");
             aSlider.slider("option","value",coefficients[0]);
-            $('.a-label').html(Math.round(coefficients[0]*100)/100);
-            bSlider.slider("enable");
+            $('.a-label').html(round_number(coefficients[0],2));
             bSlider.slider("option","value",coefficients[1]);
-            $('.b-label').html(Math.round(coefficients[0]*100)/100);
-            $('.equation').html("y="+Math.round(coefficients[0]*100)/100+"x+("+Math.round(coefficients[0]*100)/100+")");
-            displayErrorInfo();
+            $('.b-label').html(round_number(coefficients[1],2));
+            updateEquation();
+        }
+        
+        function updateDisplay(){
+            updatePointsOnGraph();
+            if($('.plot-fit').prop("checked")){
+                updateBestFitDisplay();
+            }
             turnErrorDisplayOff();
             turnErrorDisplayOn();
+            displayErrorInfo();
+            updateTable();
+            graph();
+        }
 
+        //functionality to the buttons
+        $('.add-point').on("click",function(){
+            point = [parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val())]
+            model.add_point(point);
+            updateDisplay()
         });
         
-//        $('.remove-line').on("click",function(){
-//            $('.plot-fit').attr('checked',false);
-//            $('.best-fit').remove();
-//            
-//            $('.toggle-error').attr('checked',false);
-//            turnErrorDisplayOff();
-//            
-//            aSlider.slider("disable");
-//            bSlider.slider("disable");
-//            
-//            clearTable();
-//        });
-//
-//        $('.toggle-error').on("click",function(){
-//            if($(".best-fit").length > 0){ //if there is a line, toggle errors
-//                if($(this).prop("checked")==true){
-//                    turnErrorDisplayOn();
-//                }
-//                else{
-//                    turnErrorDisplayOff();
-//                }
-//            }
-//            else{ //otherwise, don't let the user click this
-//                $(this).attr("checked",false);
-//            }
-//        });
+        $('.plot-fit').on("click",function(){
+            updateDisplay()
+
+        });
+
+        $('.randomize').on("click",function(){
+            model.randomize_points(4);
+            updateDisplay()
+        })
         
-        return {displayLine: displayLine, addPointToGraph: addPointToGraph};
+        return {displayLine: displayLine, addPointToGraph: addPointToGraph, updateDisplay: updateDisplay};
     }
     
     //set up svg with axes and labels
     function setupGraph(){
 
-        chart = d3.select(".chart-container").append("svg").attr("class","chart").attr("height", outer_height).attr("width",outer_width).append("g").attr("transform","translate(" + margin.left + "," + margin.top + ")")//.on("mousemove", function() { move(d3.mouse(this)); }).on("click",function(){click(d3.mouse(this))});
+        chart = d3.select(".chart-container").append("svg").attr("class","chart").attr("height", outer_height).attr("width",outer_width).append("g").attr("transform","translate(" + margin.left + "," + margin.top + ")");
         
-//        function move(p2) {
-//            }
-//        function click(p2){
-//            chart.append("circle")
-//                .attr("cy",p2[1])
-//                .attr("cx",p2[0])
-//                .attr("fill","black")
-//                .attr("r","2");
-//            console.log(p2[0]-margin.left,p2[1]-margin.top);
-//            model.add_point([p2[0],p2[1]]);
-//        }
         chart.selectAll(".y-line").data(y_scale.ticks(10)).enter().append("line").attr("class", "y-line").attr('x1', 0).attr('x2', chart_width).attr('y1', y_scale).attr('y2',y_scale);
         
         chart.selectAll(".x-line").data(x_scale.ticks(10)).enter().append("line").attr("class", "x-line").attr('x1', x_scale).attr('x2', x_scale).attr('y1', 0).attr('y2',chart_height);
@@ -571,8 +595,10 @@ var lineFit = (function() {
         
         var points = [[4,4],[1,1],[2,1],[-3,6]];
         for(var i =0; i<points.length; i++){
-            view.addPointToGraph(points[i][0],points[i][1]);
+            model.add_point([points[i][0],points[i][1]]);
+            console.log(model.get_point_list());
         }
+        view.updateDisplay();
     }; 
     
     exports.setup = setup;
