@@ -22,6 +22,7 @@ var lineFit = (function() {
     var x_scale = d3.scale.linear().domain([xMin,xMax]).range([0,chart_width]);
     var y_scale = d3.scale.linear().domain([yMin,yMax]).range([chart_height,0]);
     var x_scale2 = d3.scale.linear().domain([0,chart_width]).range([xMin,xMax]);
+    var y_scale2 = d3.scale.linear().domain([chart_height,0]).range([yMin,yMax]);
     
     var circ;
     
@@ -240,12 +241,12 @@ var lineFit = (function() {
                 .on("mouseover", function(){
                     return tooltip.html("Error: "+Math.round(model.findError([x,y])*1000)/1000+" "+" Squared Error: "+Math.round(Math.pow(model.findError([x,y]),2)*1000)/1000).style("visibility", "visible");
                     
-                    if ($('.plot-fit').prop('checked') == true){
-                        return tooltip.html("Error: "+model.findError([x,y])+" "+" Squared Error: "+Math.pow(model.findError([x,y]),2)).style("visibility", "visible");
-                    }
-                    else{
-                        return tooltip.html("Check the Plot Best-Fit box to view the error").style("visibility", "visible");
-                    }
+                    // if ($('.plot-fit').prop('checked') == true){
+                    //     return tooltip.html("Error: "+model.findError([x,y])+" "+" Squared Error: "+Math.pow(model.findError([x,y]),2)).style("visibility", "visible");
+                    // }
+                    // else{
+                    //     return tooltip.html("Check the Plot Best-Fit box to view the error").style("visibility", "visible");
+                    // }
                 })
                 .on("mousemove", function(){
                     return tooltip.style("top",(d3.event.pageY+10)+"px").style("left",(d3.event.pageX+10)+"px");
@@ -254,6 +255,7 @@ var lineFit = (function() {
                     return tooltip.style("visibility", "hidden");
                 })
                 .style("fill","blue")
+                .call(move)
                 .attr("r", "4");
             model.add_point([x,y]);
             updateTable();
@@ -291,6 +293,28 @@ var lineFit = (function() {
             $(".error").popover({trigger: 'hover', title: "Error Value", content: makeErrorString(color_scale), html: true});
             $(".squared").popover({trigger: 'hover', title: "Sum of Squares Value", content: makeErrorSquareString(color_scale).unsolved + "<br>=</br>" + makeErrorSquareString(color_scale).solved, html: true});
         }
+
+        var move =  d3.behavior.drag()
+                    .on("drag",drag)
+                    .on("dragend",function(){
+                    var dragPoint = d3.select(this);
+                    var newX = x_scale2(parseInt(dragPoint.attr("cx")));
+                    var newY = y_scale2(parseInt(dragPoint.attr("cy")));
+                    addPointToGraph(newX,newY);
+                    console.log(model.get_point_list());
+                    displayLine(model.bestFit());
+                
+                });
+
+            function drag(){
+                var dragPoint = d3.select(this);
+                dragPoint
+                .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
+                .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
+                
+        }
+
+
         
         //returns a string that shows how the error was calculated by color
         function makeErrorString(color_scale){
