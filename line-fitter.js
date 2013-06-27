@@ -101,6 +101,14 @@ var lineFit = (function() {
             return sumOfSquareError;
         }
         
+        function points_with_square_error(){
+            var new_list = [];
+            for(var i=0; i<pointList.length; i++){
+                new_list.push([{y: Math.pow(findError(pointList[i]),2)}])
+            }
+            return new_list;
+        }
+        
         //finds the best fit for the points on the graph
         function bestFit(){
             var lineCoeffs; //coefficients of y=ax+b in the form [a,b]
@@ -152,8 +160,23 @@ var lineFit = (function() {
             return [a,b];
         }
         
-        
-        return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, change_a: change_a, change_b: change_b, findErrors: findErrors, findError: findError, lineAt: lineAt, bestFit: bestFit, linear_regression: linear_regression, sumOfSquares: sumOfSquares};
+        function get_variance(){
+            var n = pointList.length;
+            if(n ==0){
+                return 0;
+            }
+            var sum = 0;
+            for(var i =0; i<n; i++){
+                sum += pointList[i][0];
+            }
+            var mean = sum/n;
+            var variance = 0;
+            for(var i =0; i<n; i++){
+                variance += Math.pow(pointList[i][0]-mean,2);
+            }
+            return variance;
+        }
+        return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, change_a: change_a, change_b: change_b, findErrors: findErrors, findError: findError, lineAt: lineAt, bestFit: bestFit, linear_regression: linear_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error};
     }
     
     function Controller(model) {
@@ -168,12 +191,16 @@ var lineFit = (function() {
         return {add_point_from_input: add_point_from_input, change_best_fit_line: change_best_fit_line};
     }
     
-    function View(div,model,controller) {       
+    function View(div,model,controller) {    
+        var color_scale = d3.scale.linear()
+                .domain([0, yMax])
+                .range(['#61A72D','#CC0000']);
+        
         div.append("<div class='row-fluid hero-unit'><h2>Linear Regression</h2></div><div class='row-fluid well'><div class='span6 graph'></div><div class='span6 controls'></div></div>");
         $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'add-point'>Add Point</button><br></br><div class='row-fluid'><div class='row-fluid'></div></div></div></div><div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div>");
         //<button class='remove-line'>Remove Line</button>
         
-        $(".graph").append("<div class='chart-container'></div><div class='info-container'></div>");
+        $(".graph").append("<div class='chart-container'></div><div class='info-container'></div><div class='graph-container'></div>");
         
         var tooltip = d3.select("body").append("div").attr("class","point-error").text("");
 
@@ -187,6 +214,7 @@ var lineFit = (function() {
             displayErrorInfo()    
             turnErrorDisplayOff();
             turnErrorDisplayOn();
+            graph()
             } 
 
         });
@@ -281,9 +309,6 @@ var lineFit = (function() {
             
         //adds vertical bars from point to best-fit line (with color scale that displays how much error)
         function turnErrorDisplayOn(){
-            var color_scale = d3.scale.linear()
-                .domain([0, yMax])
-                .range(['#61A72D','#CC0000']);
         
             chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
             
@@ -384,13 +409,44 @@ var lineFit = (function() {
         function clearTable(){
             $(".data-table").find("tr:gt(0)").remove();
         }
+        function graph(){
+            $(".graph-container").empty();
+            var maxValue = model.get_variance()*5;
+            var title = "Sum of Squares";
+            var data = model.points_with_square_error();
+            
+            var graph_outer_width = parseInt($(".graph").css("width"))-38;
+            var graph_outer_height = 300;
+            var graph_margin = { top: graph_outer_width/8, right: graph_outer_width/8, bottom: graph_outer_width/8, left: graph_outer_width/8 }
+            var graph_chart_width = graph_outer_width - graph_margin.left - graph_margin.right;
+            var graph_chart_height = graph_outer_height -graph_margin.top - graph_margin.bottom;
+                    
+            var graph_y_scale = d3.scale.linear().domain([0,maxValue]).range([graph_chart_height,0]);
+            
+            var graph_chart = d3.select(".graph-container").append("svg").attr("class","graph").attr("height", graph_outer_height).attr("width",graph_outer_width).append("g").attr("transform","translate(" + (graph_margin.left+graph_margin.right) + "," + (graph_margin.top + graph_margin.bottom -5)+ ")");
+                
+            graph_chart.selectAll(".y-scale-label").data(graph_y_scale.ticks(4)).enter().append("text").attr("class", "y-scale-label").attr("x",graph_margin.left/2).attr('y',graph_y_scale).attr("text-anchor","end").attr("dy","0.3em").attr("dx",-graph_margin.left/2).text(function(d){return d});
+            
+            graph_chart.selectAll(".chart-title").data([1]).enter().append("text").attr("class", "chart-title").attr("x",-10).attr('y',-10).text(title);
+            
+            if(data.length>0){
+                var stack = d3.layout.stack();
+                var stacked_data = stack(data);
+                console.log(stacked_data)
+                var layer_groups = graph_chart.selectAll(".layer").data(stacked_data).enter().append("g").attr("class", "layer");
+                
+                var rects = layer_groups.selectAll('rect').data(function(d){return d}).enter().append('rect').attr("x",0).style("fill", function(d, i, j) { return color_scale(j);}).attr("height", 0).attr("y", function(d){return graph_y_scale(d.y0)}).transition().duration(500).delay(function(d,i,j){return j*450}).attr("y", function(d){return graph_y_scale(d.y0+d.y)}).attr("width", graph_chart_width).attr("height", function(d){ return graph_y_scale(d.y0) - graph_y_scale(d.y0+d.y); });
+            }
+            
 
+      }
         //functionality to the buttons
         $('.add-point').on("click",function(){
 
             point = [parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val())]
             addPointToGraph(point[0],point[1]);
             if ($('.plot-fit').prop('checked')==true){
+                controller.change_best_fit_line();
                 displayLine(model.bestFit());
             }
             turnErrorDisplayOff();
