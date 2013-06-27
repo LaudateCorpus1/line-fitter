@@ -127,15 +127,6 @@ var lineFit = (function() {
         function lineAt(x){
             return (currentCoeffs[0]*x)+currentCoeffs[1];
         }
-        
-        function getIndexOf(x,y){
-            for (var i = 0; i < pointList.length; i++) {
-                if(pointList[i][0] == x && pointList[i][1] == y)
-                    return i;
-            };
-
-            return -1;
-        };
 
         function sumOfSquares(){
             var sumOfSquareError = 0;
@@ -231,7 +222,7 @@ var lineFit = (function() {
         return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, 
             change_a: change_a, change_b: change_b, findErrors: findErrors, findError: findError, lineAt: lineAt, bestFit: bestFit, 
             linear_regression: linear_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, 
-            points_with_square_error: points_with_square_error, getIndexOf:getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, remove_point: remove_point, getIndexOf: getIndexOf};
+            points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, remove_point: remove_point};
     }
     
     function Controller(model) {
@@ -251,13 +242,15 @@ var lineFit = (function() {
                 .domain([0, yMax])
                 .range(['#61A72D','#CC0000']);
         
-        div.append("<div class='container-fluid'><div class='row-fluid'><div class='span12 hero-unit'><h2>Linear Regression</h2></div></div><div class='row-fluid'><div class='span12 well'><div class='span8 graph'></div><div class='span4 controls'></div></div></div></div>");
-        $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point'>Add Point</button><button class = 'btn btn-small randomize'>Randomize Points</button><br></br></div></div></div><div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div>");
-        //<button class='remove-line'>Remove Line</button>
+        div.append("<div class='container-fluid'><div class='row-fluid'><div class='span12 hero-unit'><h2>Linear Regression</h2></div></div><div class='row-fluid'><div class='span12 well'><div class='span8 graph'></div><div class='span4 table-container'></div><div class='control-row'></div></div></div>");
+
+        $(".graph").append("<div class='row-fluid'><div class='span8 chart-container'></div><div class='span4'><div class='graph-container'></div><div class='info-container'></div></div></div>");
         
+        $(".graph").append("<div class='span8'><div class='row-fluid'><div class='controls'></div></div></div>");
         
-        $(".graph").append("<div class='row-fluid'><div class='span8 chart-container'></div><div class='span4 graph-container'></div></div><div class='info-container'></div>");
+        $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point'>Add Point</button><button class = 'btn btn-small randomize'>Randomize Points</button><br></br></div></div></div>");
         
+        $(".table-container").append("<div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div>");
         var tooltip = d3.select("body").append("div").attr("class","point-error").text("");
 
         var aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
@@ -283,9 +276,6 @@ var lineFit = (function() {
             },
         });
 
-//        aSlider.slider("disable");
-//        bSlider.slider("disable");
-        
         aSlider.slider('option','value',0);
         bSlider.slider('option','value',0);
         model.change_a(0);
@@ -308,6 +298,7 @@ var lineFit = (function() {
             updateTable();
             
             if(model.get_point_list().length > 0){
+                turnErrorDisplayOff()
                 turnErrorDisplayOn();
             }
         }
@@ -315,18 +306,24 @@ var lineFit = (function() {
         function updatePointsOnGraph(){
             chart.selectAll(".datapoint").remove();
             var points = model.get_point_list()
-            chart.selectAll(".endpoint").data(points).enter().append("circle")
+            var point_index;
+            chart.selectAll(".datapoint").data(points).enter().append("circle")
                 .attr("class", "datapoint")
                 .attr("cx", function(d){return x_scale(d[0])})
                 .attr("cy", function(d){return y_scale(d[1])})
                 .on("mouseover", function(d){
-                    return tooltip.html("Error: "+Math.round(model.findError([d[0],d[1]])*1000)/1000+" "+" Squared Error: "+Math.round(Math.pow(model.findError([d[0],d[1]]),2)*1000)/1000).style("visibility", "visible");
+                    point_index = model.getIndexOf(d[0],d[1]);
+                    $('#'+point_index).closest("tr").css("outline","thin dashed blue");
+                    $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","black");
+                    tooltip.html("<table class='table'><th>Error: "+round_number(model.findError([d[0],d[1]]),3)+"</th>"+"<th>Squared Error: "+round_number(Math.pow(model.findError([d[0],d[1]]),2),3)+"</th></table>").style("visibility", "visible");
                 })
                 .on("mousemove", function(){
-                    return tooltip.style("top",(d3.event.pageY+10)+"px").style("left",(d3.event.pageX+10)+"px");
+                    tooltip.style("top",(d3.event.pageY+10)+"px").style("left",(d3.event.pageX+10)+"px");
                 })
                 .on("mouseout",function(){
-                    return tooltip.style("visibility", "hidden");
+                    $('#'+point_index).closest("tr").css("outline","none");
+                    $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","none");
+                    tooltip.style("visibility", "hidden");
                 })
                 .style("fill","blue")
                 .call(move)
@@ -349,7 +346,6 @@ var lineFit = (function() {
 
         function removeErrorInfo(){
             $(".info-container").empty();
-            //$(".error").popover('disable');
             $(".squared").popover('disable');
         }
             
@@ -481,7 +477,7 @@ var lineFit = (function() {
                     
             var graph_y_scale = d3.scale.linear().domain([0,maxValue]).range([graph_chart_height,0]);
             
-            var graph_chart = d3.select(".graph-container").append("svg").attr("class","graph").attr("height", graph_outer_height).attr("width",graph_outer_width).append("g").attr("transform","translate(" + (graph_margin.left+graph_margin.right) + "," + (graph_margin.top + graph_margin.bottom -5)+ ")");
+            var graph_chart = d3.select(".graph-container").append("svg").attr("class","graphic").attr("height", graph_outer_height).attr("width",graph_outer_width).append("g").attr("class","translation").attr("transform","translate(" + (graph_margin.left+graph_margin.right) + "," + (graph_margin.top + graph_margin.bottom -5)+ ")");
                 
             graph_chart.selectAll(".y-scale-label").data(graph_y_scale.ticks(4)).enter().append("text").attr("class", "y-scale-label").attr("x",graph_margin.left/2).attr('y',graph_y_scale).attr("text-anchor","end").attr("dy","0.3em").attr("dx",-graph_margin.left/2).text(function(d){return d});
             
@@ -518,6 +514,7 @@ var lineFit = (function() {
             turnErrorDisplayOn();
             displayErrorInfo();
             updateTable();
+            updateEquation();
             graph();
         }
 
