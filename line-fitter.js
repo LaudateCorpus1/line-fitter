@@ -25,7 +25,7 @@ var lineFit = (function() {
     var y_scale2 = d3.scale.linear().domain([chart_height,0]).range([yMin,yMax]);
     
     var circ;
-    
+    var dict = [];
     
     //keeping track of data points
     var points = [];
@@ -294,24 +294,33 @@ var lineFit = (function() {
             $(".squared").popover({trigger: 'hover', title: "Sum of Squares Value", content: makeErrorSquareString(color_scale).unsolved + "<br>=</br>" + makeErrorSquareString(color_scale).solved, html: true});
         }
 
+        
+
         var move =  d3.behavior.drag()
                     .on("drag",drag)
                     .on("dragend",function(){
-                    var dragPoint = d3.select(this);
-                    var newX = x_scale2(parseInt(dragPoint.attr("cx")));
-                    var newY = y_scale2(parseInt(dragPoint.attr("cy")));
-                    addPointToGraph(newX,newY);
-                    console.log(model.get_point_list());
-                    displayLine(model.bestFit());
-                
+                        var oldX = Math.round(dict[0].x)
+                        var oldY = Math.round(dict[0].y)
+                        console.log(oldX+","+oldY); 
+                        var dragPoint = d3.select(this);
+                        var newX = x_scale2(parseInt(dragPoint.attr("cx")));
+                        var newY = y_scale2(parseInt(dragPoint.attr("cy")));
+                        // need a remove function or some way to remove the point that was being dragged around from the table and 
+                        //add the point we arrived to to the index of the removed point???
+                        addPointToGraph(newX,newY); 
+                        displayLine(model.bestFit());
+                    
                 });
 
             function drag(){
+                
                 var dragPoint = d3.select(this);
+                var xVal = x_scale2(parseInt(dragPoint.attr("cx")));
+                var yVal = y_scale2(parseInt(dragPoint.attr("cy")));
+                dict.push({'x':xVal,'y':yVal});
                 dragPoint
                 .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
                 .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
-                
         }
 
 
