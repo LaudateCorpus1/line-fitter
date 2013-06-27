@@ -93,6 +93,15 @@ var lineFit = (function() {
             return (currentCoeffs[0]*x)+currentCoeffs[1];
         }
         
+        function getIndexOf(x,y){
+            for (var i = 0; i < pointList.length; i++) {
+                if(pointList[i][0] == x && pointList[i][1] == y)
+                    return i;
+            };
+
+            return 'asdsa';
+        };
+
         function sumOfSquares(){
             var sumOfSquareError = 0;
             for(var i=0; i<pointList.length; i++){
@@ -176,7 +185,10 @@ var lineFit = (function() {
             }
             return variance;
         }
-        return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, change_a: change_a, change_b: change_b, findErrors: findErrors, findError: findError, lineAt: lineAt, bestFit: bestFit, linear_regression: linear_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error};
+        return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, 
+            change_a: change_a, change_b: change_b, findErrors: findErrors, findError: findError, lineAt: lineAt, bestFit: bestFit, 
+            linear_regression: linear_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, 
+            points_with_square_error: points_with_square_error, getIndexOf:getIndexOf};
     }
     
     function Controller(model) {
@@ -298,7 +310,6 @@ var lineFit = (function() {
             $(".error").html("Total error: " + round_number(model.findErrors().error,2));
             $(".squared").html("Total squared error: " +round_number(model.findErrors().squareError,2));
             
-
         }
 
         function removeErrorInfo(){
@@ -324,6 +335,7 @@ var lineFit = (function() {
         var move =  d3.behavior.drag()
                     .on("drag",drag)
                     .on("dragend",function(){
+                        console.log(model.getIndexOf(-3,6));
                         var oldX = Math.round(dict[0].x)
                         var oldY = Math.round(dict[0].y)
                         console.log(oldX+","+oldY); 
