@@ -298,13 +298,10 @@ var lineFit = (function() {
                     .on("drag",drag)
                     .on("dragend",function(){
                     var dragPoint = d3.select(this);
-                    dragPoint
-                    .attr("cx",function(){return parseInt(dragPoint.attr("cx"));})
-                    .attr("cy",function(){return parseInt(dragPoint.attr("cy"));})
                     var newX = x_scale2(parseInt(dragPoint.attr("cx")));
                     var newY = y_scale2(parseInt(dragPoint.attr("cy")));
-                    model.add_point([newX,newY]);
                     addPointToGraph(newX,newY);
+                    console.log(model.get_point_list());
                     displayLine(model.bestFit());
                 
                 });
@@ -314,8 +311,7 @@ var lineFit = (function() {
                 dragPoint
                 .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
                 .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
-                .call(d3.behavior.drag().on("mouseout",dragPoint.remove()))
-
+                
         }
 
 
