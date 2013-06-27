@@ -266,11 +266,7 @@ var lineFit = (function() {
             model.change_a(ui.value);
             displayLine(model.getCoeffs());
             $('.a-label').html(ui.value);
-            displayErrorInfo()    
-            turnErrorDisplayOff();
-            turnErrorDisplayOn();
-            graph()
-            updateEquation();
+            updateDisplay();
             } 
 
         });
@@ -282,11 +278,7 @@ var lineFit = (function() {
                     model.change_b(ui.value);
                     displayLine(model.getCoeffs());
                     $('.b-label').html(ui.value);
-                    displayErrorInfo()
-                    turnErrorDisplayOff();
-                    turnErrorDisplayOn();
-                    graph();
-                    updateEquation();
+                    updateDisplay();
             },
         });
 
@@ -317,31 +309,6 @@ var lineFit = (function() {
             if(model.get_point_list().length > 0){
                 turnErrorDisplayOn();
             }
-        }
-        //adds a circular point of radius 2px at coordinates (x,y) to the svg canvas
-        function addPointToGraph(x,y){
-            chart.selectAll(".endpoint").data([0]).enter().append("circle")
-                .attr("class", "datapoint")
-                .attr("cx", x_scale(x))
-                .attr("cy", y_scale(y))
-                .on("mouseover", function(){
-                    return tooltip.html("Error: "+Math.round(model.findError([x,y])*1000)/1000+" "+" Squared Error: "+Math.round(Math.pow(model.findError([x,y]),2)*1000)/1000).style("visibility", "visible");
-                })
-                .on("mousemove", function(){
-                    return tooltip.style("top",(d3.event.pageY+10)+"px").style("left",(d3.event.pageX+10)+"px");
-                })
-                .on("mouseout",function(){
-                    return tooltip.style("visibility", "hidden");
-                })
-                // .style("fill","blue")
-                .call(move)
-                .attr("r", "4");
-            model.add_point([x,y]);
-            updateTable();
-            turnErrorDisplayOff();
-            turnErrorDisplayOn();
-            updateEquation();
-            graph();
         }
 
         function updatePointsOnGraph(){
@@ -575,7 +542,7 @@ var lineFit = (function() {
             updateDisplay()
         })
         
-        return {displayLine: displayLine, addPointToGraph: addPointToGraph, updateDisplay: updateDisplay};
+        return {displayLine: displayLine, updateDisplay: updateDisplay};
     }
     
     //set up svg with axes and labels
