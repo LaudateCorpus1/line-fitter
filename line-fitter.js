@@ -510,26 +510,8 @@ var lineFit = (function() {
             
 
       }
-        //functionality to the buttons
-        $('.add-point').on("click",function(){
-
-            point = [parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val())]
-            addPointToGraph(point[0],point[1]);
-            if ($('.plot-fit').prop('checked')==true){
-                controller.change_best_fit_line();
-                displayLine(model.bestFit());
-                var coefficients = model.getCoeffs();
-                aSlider.slider("option","value",coefficients[0]);
-                $('.a-label').html(round_number(coefficients[0],2));
-                bSlider.slider("option","value",coefficients[1]);
-                $('.b-label').html(round_number(coefficients[1],2));
-            }
-            turnErrorDisplayOff();
-            turnErrorDisplayOn();
-            
-        });
         
-        $('.plot-fit').on("click",function(){
+        function updateBestFitDisplay(){
             controller.change_best_fit_line();
             var coefficients = model.getCoeffs();
             displayLine(coefficients);
@@ -537,53 +519,46 @@ var lineFit = (function() {
             $('.a-label').html(round_number(coefficients[0],2));
             bSlider.slider("option","value",coefficients[1]);
             $('.b-label').html(round_number(coefficients[1],2));
-            
             updateEquation();
-            displayErrorInfo();
-            turnErrorDisplayOff();
-            turnErrorDisplayOn();
-            graph();
-
-        });
-
-        $('.randomize').on("click",function(){
-            model.randomize_points(4);
+        }
+        
+        function updateDisplay(){
             updatePointsOnGraph();
             if($('.plot-fit').prop("checked")){
-                controller.change_best_fit_line();
-                var coefficients = model.getCoeffs();
-                displayLine(coefficients);
-                aSlider.slider("option","value",coefficients[0]);
-                $('.a-label').html(round_number(coefficients[0],2));
-                bSlider.slider("option","value",coefficients[1]);
-                $('.b-label').html(round_number(coefficients[1],2));
+                updateBestFitDisplay();
             }
             turnErrorDisplayOff();
             turnErrorDisplayOn();
             displayErrorInfo();
             updateTable();
             graph();
+        }
+
+        //functionality to the buttons
+        $('.add-point').on("click",function(){
+            point = [parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val())]
+            model.add_point(point);
+            updateDisplay()
+        });
+        
+        $('.plot-fit').on("click",function(){
+            updateDisplay()
+
+        });
+
+        $('.randomize').on("click",function(){
+            model.randomize_points(4);
+            updateDisplay()
         })
         
-        return {displayLine: displayLine, addPointToGraph: addPointToGraph};
+        return {displayLine: displayLine, addPointToGraph: addPointToGraph, updateDisplay: updateDisplay};
     }
     
     //set up svg with axes and labels
     function setupGraph(){
 
-        chart = d3.select(".chart-container").append("svg").attr("class","chart").attr("height", outer_height).attr("width",outer_width).append("g").attr("transform","translate(" + margin.left + "," + margin.top + ")")//.on("mousemove", function() { move(d3.mouse(this)); }).on("click",function(){click(d3.mouse(this))});
+        chart = d3.select(".chart-container").append("svg").attr("class","chart").attr("height", outer_height).attr("width",outer_width).append("g").attr("transform","translate(" + margin.left + "," + margin.top + ")");
         
-//        function move(p2) {
-//            }
-//        function click(p2){
-//            chart.append("circle")
-//                .attr("cy",p2[1])
-//                .attr("cx",p2[0])
-//                .attr("fill","black")
-//                .attr("r","2");
-//            console.log(p2[0]-margin.left,p2[1]-margin.top);
-//            model.add_point([p2[0],p2[1]]);
-//        }
         chart.selectAll(".y-line").data(y_scale.ticks(10)).enter().append("line").attr("class", "y-line").attr('x1', 0).attr('x2', chart_width).attr('y1', y_scale).attr('y2',y_scale);
         
         chart.selectAll(".x-line").data(x_scale.ticks(10)).enter().append("line").attr("class", "x-line").attr('x1', x_scale).attr('x2', x_scale).attr('y1', 0).attr('y2',chart_height);
@@ -603,8 +578,10 @@ var lineFit = (function() {
         
         var points = [[4,4],[1,1],[2,1],[-3,6]];
         for(var i =0; i<points.length; i++){
-            view.addPointToGraph(points[i][0],points[i][1]);
+            model.add_point([points[i][0],points[i][1]]);
+            console.log(model.get_point_list());
         }
+        view.updateDisplay();
     }; 
     
     exports.setup = setup;
