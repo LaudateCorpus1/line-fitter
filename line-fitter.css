@@ -28,6 +28,7 @@ body{
 .chart .error-line{
     stroke: black;
     stroke-width: 3;
+    stroke-dasharray: 2,2;
 }
 
 .chart .datapoint{
