@@ -46,8 +46,9 @@ var lineFit = (function() {
         function add_point(point){ // add a point
             pointList.push(point);
         }
-        function remove_point(index){
-            pointList.splice(index,1);
+        function replace_point(index,x,y){
+            delete pointList[index];
+            pointList[index] = [x,y];
         }
         
         function clear_points(){
@@ -252,8 +253,8 @@ var lineFit = (function() {
         return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, 
             change_a: change_a, change_b: change_b, findErrors: findErrors, findError: findError, lineAt: lineAt, bestFit: bestFit, 
             linear_regression: linear_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, 
-            points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, remove_point: remove_point, clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins};
-    }
+            points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point,clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins};
+   }
     
     function Controller(model) {
         function add_point_from_input(point){
@@ -368,6 +369,7 @@ var lineFit = (function() {
                 .on("mouseover", function(d){
                     point_index = model.getIndexOf(d[0],d[1]);
                     $('#'+point_index).closest("tr").css("outline","thin dashed blue");
+                    $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","black");
                     $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","blue").css("stroke-width","3").css("stroke-dasharray","5,3");
                     tooltip.html("<table class='table'><th>Error: "+round_number(model.findError([d[0],d[1]]),3)+"</th>"+"<th>Squared Error: "+round_number(Math.pow(model.findError([d[0],d[1]]),2),3)+"</th></table>").style("visibility", "visible");
                 })
@@ -380,6 +382,7 @@ var lineFit = (function() {
                     tooltip.style("visibility", "hidden");
                 })
                 .style("fill","blue")
+                // .on("click",clicked)
                 .call(move)
                 .attr("r", "4");
         }
@@ -402,6 +405,14 @@ var lineFit = (function() {
             $(".info-container").empty();
             $(".squared").popover('disable');
         }
+
+        function clicked(){
+            var dragPoint = d3.select(this);
+            dragPoint
+                var sdsa = x_scale2(parseInt(dragPoint.attr("cx")));
+                var odhas = y_scale2(parseInt(dragPoint.attr("cy")));
+                console.log(sdsa,odhas);
+        }
             
         //adds vertical bars from point to best-fit line (with color scale that displays how much error)
         function turnErrorDisplayOn(){
@@ -416,7 +427,8 @@ var lineFit = (function() {
         }
         
         var xVal, yVal;
-    
+
+
         var move =  d3.behavior.drag()
                     .on("drag",drag)
                     // .on("dragstart",function(){
@@ -429,11 +441,13 @@ var lineFit = (function() {
                     .on("dragend",function(){
                         dict.length = 0;
                         var dragPoint = d3.select(this);
-                        var newX = round_number(x_scale2(parseInt(dragPoint.attr("cx"))),2);
-                        var newY = round_number(y_scale2(parseInt(dragPoint.attr("cy"))),2);
+                        var newX = round_number(x_scale2(parseInt(dragPoint.attr("cx"))),0);
+                        var newY = round_number(y_scale2(parseInt(dragPoint.attr("cy"))),0);
+                        console.log([oldX,oldY]);
                         var index = model.getIndexOf(oldX,oldY);                        
-                        model.remove_point(index)
-                        model.add_point([newX,newY]);
+                        model.replace_point(index,newX,newY);
+                        console.log(model.get_point_list());
+                        // console.log(xVal, yVal);
                         updateDisplay();
                         
                     
@@ -450,8 +464,9 @@ var lineFit = (function() {
                 dragPoint
                 .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
                 .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
-        }
+            }
 
+            
 
         
         //returns a string that shows how the error was calculated by color
@@ -624,7 +639,7 @@ var lineFit = (function() {
         var points = [[4,4],[1,1],[2,1],[-3,6]];
         for(var i =0; i<points.length; i++){
             model.add_point([points[i][0],points[i][1]]);
-            // console.log(model.get_point_list());
+            console.log(model.get_point_list());
         }
         view.updateDisplay();
     }; 
