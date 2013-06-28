@@ -1,3 +1,4 @@
+
 var lineFit = (function() {
     
     var exports = {};
@@ -26,10 +27,10 @@ var lineFit = (function() {
     
     var circ;
     var dict = [];
-    var oldX;
+    var oldX_1;
     var oldY;
     var index;
-    
+    var uX;
     
 ////////////////////////////////// helper functions    
 
@@ -44,8 +45,9 @@ var lineFit = (function() {
         var currentCoeffs = []; //[a,b] where a and b are from y = ax + b
         
         function add_point(point){ // add a point
-            pointList.push(point);
+            pointList.push([round_number(point[0],1),round_number(point[1],0)]);
         }
+
         function replace_point(index,x,y){
             delete pointList[index];
             pointList[index] = [x,y];
@@ -99,7 +101,7 @@ var lineFit = (function() {
             if(isNeg>0.5){
                 y = (-1)*y;
             }
-            return [x,y]
+            return [Math.round(x),Math.round(y)]
         }
         
         //sums the difference between where the point is and where the point would be on the line
@@ -441,26 +443,46 @@ var lineFit = (function() {
                     .on("dragend",function(){
                         dict.length = 0;
                         var dragPoint = d3.select(this);
-                        var newX = round_number(x_scale2(parseInt(dragPoint.attr("cx"))),0);
+                        var newX = round_number(x_scale2(parseInt(dragPoint.attr("cx"))),1);
                         var newY = round_number(y_scale2(parseInt(dragPoint.attr("cy"))),0);
-                        console.log([oldX,oldY]);
-                        var index = model.getIndexOf(oldX,oldY);                        
-                        model.replace_point(index,newX,newY);
                         console.log(model.get_point_list());
+                        if (model.getIndexOf(oldX_1,oldY) != -1){
+                            var index = model.getIndexOf(oldX_1,oldY);
+                        }
+
+                        else if (model.getIndexOf(uX,oldY)!= -1){
+                            var index = model.getIndexOf(uX,oldY);
+                        }
+
+                        else if (model.getIndexOf(uX,oldY) == -1 && model.getIndexOf(oldX_1,oldY) == -1){
+                            var copyX = oldX_1;
+                            var newUx = round_number(copyX+.1,1);
+                            var index  = model.getIndexOf(newUx,oldY);
+                        }       
+                        console.log(uX+"......"+oldX_1+"......."+newUx)
+
+                        console.log(index);
+                 
+                        model.replace_point(index,newX,newY);
+                        // console.log(model.get_point_list());
                         // console.log(xVal, yVal);
+                        // console.log(oldX_1,oldY);
+                        // console.log([newX,newY]);
                         updateDisplay();
                         
                     
                 });
 
             function drag(){
-                
                 var dragPoint = d3.select(this);
                 xVal = x_scale2(parseInt(dragPoint.attr("cx")));
                 yVal = y_scale2(parseInt(dragPoint.attr("cy")));
                 dict.push({'x':xVal,'y':yVal});
-                oldX = Math.round((dict[0].x));
-                oldY = Math.round((dict[0].y));
+                oldX_1 = round_number((dict[0].x),1);
+                oldY = round_number((dict[0].y),0);
+
+                uX = Math.round(oldX_1*10)/10;
+
                 dragPoint
                 .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
                 .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
@@ -639,7 +661,7 @@ var lineFit = (function() {
         var points = [[4,4],[1,1],[2,1],[-3,6]];
         for(var i =0; i<points.length; i++){
             model.add_point([points[i][0],points[i][1]]);
-            console.log(model.get_point_list());
+            // console.log(model.get_point_list());
         }
         view.updateDisplay();
     }; 
