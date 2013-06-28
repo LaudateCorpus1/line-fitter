@@ -83,7 +83,12 @@ button:hover{
 .b-slider{
     width:60%;
 }
-
+.c-slider{
+    width:60%;
+}
+.point-number{
+    width:20%;
+}
 table{
 /*    height: 100%;*/
     font-size: 10px;

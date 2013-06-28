@@ -38,11 +38,30 @@ var lineFit = (function() {
         return Math.round(number*Math.pow(10,decimals))/Math.pow(10,decimals)
     }
     
+    function range(start, stop, step){
+    if (typeof stop=='undefined'){
+        // one param defined
+        stop = start;
+        start = 0;
+    };
+    if (typeof step=='undefined'){
+        step = 1;
+    };
+    if ((step>0 && start>=stop) || (step<0 && start<=stop)){
+        return [];
+    };
+    var result = [];
+    for (var i=start; step>0 ? i<stop : i>stop; i+=step){
+        result.push(i);
+    };
+    return result;
+};
 /////////////////////////////////// set up div functions
     
     function Model() {
         var pointList = []; //array of [x,y] arrays
         var currentCoeffs = []; //[a,b] where a and b are from y = ax + b
+        var currentQuadCoeffs = [0,0,0]; //[a,b,c] from y = ax^2+bx+c
         
         function add_point(point){ // add a point
             pointList.push([point[0],point[1]]);
@@ -87,8 +106,15 @@ var lineFit = (function() {
         function get_b(){
             return currentCoeffs[1];
         }
+        function get_c(){
+            return currentQuadCoeffs[2];
+        }
         function getCoeffs(){ //return the coefficients of the current best fit line
             return currentCoeffs;
+        }
+        
+        function getQuadCoeffs(){
+            return currentQuadCoeffs;
         }
         
         function randomize_points(number){
@@ -229,6 +255,30 @@ var lineFit = (function() {
             return [a,b];
         }
         
+        function quadratic_regression(){
+            var i, x, y,
+                sumx=0, sumy=0, sumx2=0, sumxy=0, sumx3=0,sumx4=0,sumx2y=0,
+                a, b, c;
+            var count = pointList.length;
+                
+            for(i=0;i<pointList.length;i++)
+            {   
+                // this is our data pair
+                x = pointList[i][0]; y = pointList[i][1]; 
+        
+                sumx += x;
+                sumx2 += (x*x);
+                sumy += y;
+                sumxy += (x*y);
+                sumx3 += (x*x*x);
+                sumx4 += (x*x*x*x);
+                sumx2y = (x*x)*y;
+            }
+            
+            a = sumx*sumx3*sumx2y
+        
+        }
+        
         function get_variance(){
             var n = pointList.length;
             if(n ==0){
@@ -272,7 +322,7 @@ var lineFit = (function() {
         }
         
         return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, 
-            change_a: change_a, get_a: get_a, change_b: change_b, get_b: get_b, findErrors: findErrors, findError: findError, lineAt: lineAt, bestFit: bestFit, linear_regression: linear_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point,clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins, change_point: change_point, bestFitHorizontal: bestFitHorizontal};
+            change_a: change_a, get_a: get_a, get_c: get_c, change_b: change_b, get_b: get_b, findErrors: findErrors, findError: findError, lineAt: lineAt, bestFit: bestFit, linear_regression: linear_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point,clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins, change_point: change_point, bestFitHorizontal: bestFitHorizontal, getQuadCoeffs: getQuadCoeffs};
    }
     
     function Controller(model) {
@@ -324,9 +374,9 @@ var lineFit = (function() {
         $(".line").on("click",function(){
             setupLineControls();
         })
-//        $(".parabola").on("click",function(){
-//            setupQuadraticControls();
-//        })
+        $(".parabola").on("click",function(){
+            setupQuadraticControls();
+        })
         var aSlider,bSlider,cSlider;
         //initialize the display as dealing with just lines
         setupLineControls();
@@ -345,7 +395,7 @@ var lineFit = (function() {
             $(".selected-degree").removeClass("selected-degree");
             $(".line").addClass("selected-degree");
             $(".controls").empty();
-            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point' type = 'button'>Add Point</button><br></br><div class = 'row-fluid'><button class = 'btn btn-small randomize'>Randomize Points</button><div class = 'btn-group examples'></div></div></div></div></div>");
+            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point' type = 'button'>Add Point</button><br></br><div class = 'row-fluid'># of points: <input class='point-number'><button class = 'btn btn-small randomize'>Randomize Points</button><div class = 'btn-group examples'></div></div></div></div></div>");
             $('.examples').append('<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Examples<span class="caret"></span></a><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li></ul>');
                     
             aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
@@ -373,8 +423,8 @@ var lineFit = (function() {
 
             aSlider.slider('option','value',model.get_a());
             bSlider.slider('option','value',model.get_b());
-            $('.b-label').html(model.get_b());
-            $('.a-label').html(model.get_a());
+            $('.b-label').html(round_number(model.get_b(),2));
+            $('.a-label').html(round_number(model.get_a(),2));
 
             $(".anscombe").on("click", function(){
                 var example_index = parseInt($(this).attr("data-index"));
@@ -401,7 +451,7 @@ var lineFit = (function() {
             });
     
             $('.randomize').on("click",function(){
-                model.randomize_points(4);
+                model.randomize_points($(".point-number").val());
                 updateDisplay()
             })
 //            setupTable();
@@ -413,8 +463,9 @@ var lineFit = (function() {
             $(".selected-degree").removeClass("selected-degree");
             $(".horizontal-line").addClass("selected-degree");
             $(".controls").empty();
-            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point' style = 'margin-left:10px;'>Add Point</button><br></br><div class = 'row-fluid'><button class = 'btn btn-small randomize'>Randomize Points</button></div></div></div></div>");
-
+            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point' style = 'margin-left:10px;'>Add Point</button><br></br><div class = 'row-fluid'># of points: <input class='point-number'><button class = 'btn btn-small randomize'>Randomize Points</button></div></div></div></div>");
+            model.change_a(0);
+            updateDisplay();
             bSlider = $(".b-slider").slider({ min: 1.5*yMin, max: 1.5*yMax, step: .01,
                 slide: function( event, ui ) {
                     if ($('.plot-fit').prop('checked')==true){
@@ -424,11 +475,11 @@ var lineFit = (function() {
                         displayLine(model.getCoeffs());
                         $('.b-label').html(ui.value);
                         updateDisplay();
-                },
+                }
             });
 
             bSlider.slider('option','value',model.get_b());
-            $('.b-label').html(model.get_b());
+            $('.b-label').html(round_number(model.get_b(),2));
 
             //functionality to the buttons
             $('.add-point').on("click",function(){
@@ -442,7 +493,71 @@ var lineFit = (function() {
             });
     
             $('.randomize').on("click",function(){
-                model.randomize_points(4);
+                model.randomize_points($(".point-number").val());
+                updateDisplay()
+            })
+        }
+        
+        function setupQuadraticControls(){
+            $(".selected-degree").removeClass("selected-degree");
+            $(".parabola").addClass("selected-degree");
+            $(".controls").empty();
+            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span4'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span4'>b:<div class='b-slider'></div><div class='b-label'></div></div><div class='span4'>c:<div class='c-slider'></div><div class='c-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point' type = 'button'>Add Point</button><br></br><div class = 'row-fluid'># of points: <input class='point-number'><button class = 'btn btn-small randomize'>Randomize Points</button></div></div></div></div>");
+            
+            aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
+                if ($('.plot-fit').prop('checked')==true){
+                    $('.plot-fit').attr('checked', false);
+                }
+                model.change_a(ui.value);
+                displayLine(model.getCoeffs());
+                $('.a-label').html(ui.value);
+                updateDisplay();
+                } 
+    
+            });
+            bSlider = $(".b-slider").slider({ min: 1.5*yMin, max: 1.5*yMax, step: .01,
+                slide: function( event, ui ) {
+                    if ($('.plot-fit').prop('checked')==true){
+                        $('.plot-fit').attr('checked', false);
+                        }
+                        model.change_b(ui.value);
+                        displayLine(model.getCoeffs());
+                        $('.b-label').html(ui.value);
+                        updateDisplay();
+                }
+            });
+            cSlider = $(".c-slider").slider({ min: 1.5*yMin, max: 1.5*yMax, step: .01,
+                slide: function( event, ui ) {
+                    if ($('.plot-fit').prop('checked')==true){
+                        $('.plot-fit').attr('checked', false);
+                        }
+                        model.change_b(ui.value);
+                        displayLine(model.getCoeffs());
+                        $('.c-label').html(ui.value);
+                        updateDisplay();
+                }
+            });
+            aSlider.slider('option','value',model.get_a());
+            bSlider.slider('option','value',model.get_b());
+            cSlider.slider('option','value',0);
+            $('.b-label').html(round_number(model.get_b(),2));
+            $('.a-label').html(round_number(model.get_a(),2));
+            $('.c-label').html(round_number(model.get_c(),2));
+
+            //functionality to the buttons
+            $('.add-point').on("click",function(){
+                point = [parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val())]
+                model.add_point(point);
+                updateDisplay()
+            });
+            
+            $('.plot-fit').on("click",function(){
+                updateDisplay()
+    
+            });
+    
+            $('.randomize').on("click",function(){
+                model.randomize_points($(".point-number").val());
                 updateDisplay()
             })
         }
@@ -455,6 +570,23 @@ var lineFit = (function() {
             var y2 = coefficients[0]*xMax+coefficients[1];
             
             chart.selectAll(".best-fit").data(coefficients).enter().append("line").attr("class", "best-fit").attr('x1', x_scale(xMin)).attr('x2', x_scale(xMax)).attr('y1', y_scale(y1)).attr('y2',y_scale(y2));
+            
+            updateTable();
+            
+            if(model.get_point_list().length > 0){
+                turnErrorDisplayOff()
+                turnErrorDisplayOn();
+            }
+        }
+
+        function displayQuad(){
+            var coefficients = model.getQuadCoeffs();
+            chart.selectAll(".best-fit").data(coefficients).remove();
+
+//            var y1 = coefficients[0]*xMin+coefficients[1];
+//            var y2 = coefficients[0]*xMax+coefficients[1];
+            
+            chart.selectAll(".best-fit").data(range(xMin,xMax,0.1)).enter().append("line").attr("class", "best-fit").attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.1);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.1)*(d+0.1) + coefficients[1]*(d+0.1)+coefficients[2])});
             
             updateTable();
             
@@ -477,7 +609,7 @@ var lineFit = (function() {
                     $('#'+point_index).closest("tr").css("outline","thin dashed blue");
                     $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","black");
                     $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","blue").css("stroke-width","3").css("stroke-dasharray","5,3");
-                    tooltip.html("<table class='table'><th>Error: "+round_number(model.findError([d[0],d[1]]),3)+"</th>"+"<th>Squared Error: "+round_number(Math.pow(model.findError([d[0],d[1]]),2),3)+"</th></table>").style("visibility", "visible");
+                    tooltip.html("<table class='table'><th>Error: "+round_number(model.findError([d[0],d[1]]),3)+"</th><th>Squared Error: "+round_number(Math.pow(model.findError([d[0],d[1]]),2),3)+"</th></table>").style("visibility", "visible");
                 })
                 .on("mousemove", function(){
                     tooltip.style("top",(d3.event.pageY+10)+"px").style("left",(d3.event.pageX+10)+"px");
@@ -713,6 +845,9 @@ var lineFit = (function() {
             updatePointsOnGraph();
             if($('.plot-fit').prop("checked")){
                 updateBestFitDisplay();
+            }
+            else if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
+                displayLine(model.getCoeffs());
             }
             turnErrorDisplayOff();
             turnErrorDisplayOn();
