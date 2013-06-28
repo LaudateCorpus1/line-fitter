@@ -293,10 +293,10 @@ var lineFit = (function() {
         $(".table-container").append("<div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div>");
         var tooltip = d3.select("body").append("div").attr("class","point-error").text("");
         
-        $('.examples').append('<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Examples<span class="caret"></span></a><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" id="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" id="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" id="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" id ="3">Anscombe 4</a></li></ul></li></ul>');
+        $('.examples').append('<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Examples<span class="caret"></span></a><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li></ul>');
         
         $(".anscombe").on("click", function(){
-            var example_index = parseInt($(this).attr("id"));
+            var example_index = parseInt($(this).attr("data-index"));
             controller.add_anscombe_from_file(example_index);
             var maxs_mins = model.get_maxs_and_mins();
             yMax = Math.ceil(1.2*maxs_mins.yMax);
