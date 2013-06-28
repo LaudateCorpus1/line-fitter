@@ -60,7 +60,7 @@ var lineFit = (function() {
     
     function Model() {
         var pointList = []; //array of [x,y] arrays
-        var currentCoeffs = []; //[a,b] where a and b are from y = ax + b
+        var currentCoeffs = [0,0]; //[a,b] where a and b are from y = ax + b
         var currentQuadCoeffs = [0,0,0]; //[a,b,c] from y = ax^2+bx+c
         
         function add_point(point){ // add a point
@@ -96,9 +96,14 @@ var lineFit = (function() {
         }
         function change_a(a){
             currentCoeffs[0] = a;
+            currentQuadCoeffs[0] = a;
         }
         function change_b(b){
             currentCoeffs[1] = b;
+            currentQuadCoeffs[1] = b;
+        }
+        function change_c(c){
+            currentQuadCoeffs[2] = c;
         }
         function get_a(){
             return currentCoeffs[0];
@@ -164,12 +169,22 @@ var lineFit = (function() {
             var error = point[1]-lineAt(point[0]);
             return error;
         }
+        
+        function findQuadError(point){
+            var error = point[1]-quadAt(point[0]);
+            return error;
+        }
     
         //returns the y value of the line at a point
         function lineAt(x){
             return (currentCoeffs[0]*x)+currentCoeffs[1];
         }
 
+        //returns the y value of the quadratic at a point
+        function quadAt(x){
+            return (currentQuadCoeffs[0]*x*x)+currentQuadCoeffs[1]*x+currentQuadCoeffs[2];
+        }
+        
         function sumOfSquares(){
             var sumOfSquareError = 0;
             for(var i=0; i<pointList.length; i++){
@@ -275,8 +290,13 @@ var lineFit = (function() {
                 sumx2y = (x*x)*y;
             }
             
-            a = sumx*sumx3*sumx2y
-        
+            a = -(sumx*sumx3*sumx2y -sumx*sumxy*sumx4 -sumx2y*sumx2*sumx2 + sumx2*sumy*sumx4 + sumx2*sumx3*sumxy -sumy*sumx3*sumx3)/(-count*sumx2*sumx3 +count*sumx3*sumx3 + sumx*sumx*sumx4-2*sumx*sumx2*sumx3+sumx2*sumx2*sumx2)
+            
+            b = -(-count*sumx3*sumx2y + count*sumxy*sumx4 + sumx2y*sumx*sumx2 - sumx*sumy*sumx4 -sumxy*sumx2*sumx2 +sumy*sumx2*sumx3)/(-count*sumx2*sumx3 +count*sumx3*sumx3 + sumx*sumx*sumx4-2*sumx*sumx2*sumx3+sumx2*sumx2*sumx2)
+            
+            c = -(count*sumx2*sumx2y - count*sumxy*sumx3 - sumx2y*sumx*sumx + sumx*sumx2*sumxy - sumy*sumx2*sumx2 +sumy*sumx*sumx3)/(-count*sumx2*sumx3 +count*sumx3*sumx3 + sumx*sumx*sumx4-2*sumx*sumx2*sumx3+sumx2*sumx2*sumx2)
+            
+            return [a,b,c];
         }
         
         function get_variance(){
@@ -322,7 +342,7 @@ var lineFit = (function() {
         }
         
         return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, 
-            change_a: change_a, get_a: get_a, get_c: get_c, change_b: change_b, get_b: get_b, findErrors: findErrors, findError: findError, lineAt: lineAt, bestFit: bestFit, linear_regression: linear_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point,clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins, change_point: change_point, bestFitHorizontal: bestFitHorizontal, getQuadCoeffs: getQuadCoeffs};
+            change_a: change_a, get_a: get_a, get_c: get_c, change_b: change_b, get_b: get_b, change_c: change_c, findErrors: findErrors, findError: findError, lineAt: lineAt, quadAt: quadAt, bestFit: bestFit, linear_regression: linear_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point,clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins, change_point: change_point, bestFitHorizontal: bestFitHorizontal, getQuadCoeffs: getQuadCoeffs, findQuadError: findQuadError};
    }
     
     function Controller(model) {
@@ -403,7 +423,6 @@ var lineFit = (function() {
                     $('.plot-fit').attr('checked', false);
                 }
                 model.change_a(ui.value);
-                displayLine(model.getCoeffs());
                 $('.a-label').html(ui.value);
                 updateDisplay();
                 } 
@@ -415,7 +434,6 @@ var lineFit = (function() {
                         $('.plot-fit').attr('checked', false);
                         }
                         model.change_b(ui.value);
-                        displayLine(model.getCoeffs());
                         $('.b-label').html(ui.value);
                         updateDisplay();
                 },
@@ -472,7 +490,6 @@ var lineFit = (function() {
                         $('.plot-fit').attr('checked', false);
                         }
                         model.change_b(ui.value);
-                        displayLine(model.getCoeffs());
                         $('.b-label').html(ui.value);
                         updateDisplay();
                 }
@@ -509,7 +526,6 @@ var lineFit = (function() {
                     $('.plot-fit').attr('checked', false);
                 }
                 model.change_a(ui.value);
-                displayLine(model.getCoeffs());
                 $('.a-label').html(ui.value);
                 updateDisplay();
                 } 
@@ -521,7 +537,6 @@ var lineFit = (function() {
                         $('.plot-fit').attr('checked', false);
                         }
                         model.change_b(ui.value);
-                        displayLine(model.getCoeffs());
                         $('.b-label').html(ui.value);
                         updateDisplay();
                 }
@@ -531,8 +546,7 @@ var lineFit = (function() {
                     if ($('.plot-fit').prop('checked')==true){
                         $('.plot-fit').attr('checked', false);
                         }
-                        model.change_b(ui.value);
-                        displayLine(model.getCoeffs());
+                        model.change_c(ui.value);
                         $('.c-label').html(ui.value);
                         updateDisplay();
                 }
@@ -564,6 +578,7 @@ var lineFit = (function() {
 
          //takes coefficients to y=ax+b and displays the corresponding on the graph
         function displayLine(coefficients){
+            chart.selectAll(".best-fit").data(range(xMin,xMax,0.1)).remove();
             chart.selectAll(".best-fit").data(coefficients).remove();
 
             var y1 = coefficients[0]*xMin+coefficients[1];
@@ -581,8 +596,8 @@ var lineFit = (function() {
 
         function displayQuad(){
             var coefficients = model.getQuadCoeffs();
+            chart.selectAll(".best-fit").data(range(xMin,xMax,0.1)).remove();
             chart.selectAll(".best-fit").data(coefficients).remove();
-
 //            var y1 = coefficients[0]*xMin+coefficients[1];
 //            var y2 = coefficients[0]*xMax+coefficients[1];
             
@@ -592,7 +607,7 @@ var lineFit = (function() {
             
             if(model.get_point_list().length > 0){
                 turnErrorDisplayOff()
-                turnErrorDisplayOn();
+                turnQuadErrorDisplayOn();
             }
         }
 
@@ -634,8 +649,14 @@ var lineFit = (function() {
         }
         
         function updateEquation(){
-            var coefficients = model.getCoeffs();
-            $('.equation').html("y = "+round_number(coefficients[0],2)+"x + (" + round_number(coefficients[1],2) + ")");
+            if($(".horizontal-line").hasClass("selected degree") || $(".line").hasClass("selected degree")){
+                var coefficients = model.getCoeffs();
+                $('.equation').html("y = "+round_number(coefficients[0],2)+"x + (" + round_number(coefficients[1],2) + ")");
+            }
+            else{
+                var coefficients = model.getQuadCoeffs();
+                $('.equation').html("y = "+round_number(coefficients[0],2)+"x<sup>2</sup> + (" + round_number(coefficients[1],2) + ")x + "+ round_number(coefficients[2],2));
+            }
         }
 
         function removeErrorInfo(){
@@ -660,19 +681,21 @@ var lineFit = (function() {
             
             $(".squared").popover({trigger: 'hover', title: "Sum of Squares Value", content: makeErrorSquareString(color_scale).unsolved + "<br>=</br>" + makeErrorSquareString(color_scale).solved, html: true});
         }
+
+        function turnQuadErrorDisplayOn(){
+        
+            chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.quadAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findQuadError(d)); });
+            
+            displayErrorInfo()
+            
+            $(".squared").popover({trigger: 'hover', title: "Sum of Squares Value", content: makeErrorSquareString(color_scale).unsolved + "<br>=</br>" + makeErrorSquareString(color_scale).solved, html: true});
+        }
         
         var xVal, yVal;
 
 
         var move =  d3.behavior.drag()
                     .on("drag",drag)
-                    // .on("dragstart",function(){
-                    //     var dragPoint = d3.select(this);
-                    //     xVal = x_scale2(parseInt(dragPoint.attr("cx")));
-                    //     yVal = y_scale2(parseInt(dragPoint.attr("cy")));
-                    //     index = model.getIndexOf(round_number(xVal,2),round_number(yVal,2));
-                    //     console.log(index);
-                    // })
                     .on("dragend",function(){
                         dict.length = 0;
                         var dragPoint = d3.select(this);
@@ -697,10 +720,6 @@ var lineFit = (function() {
                         console.log(index);
                  
                         model.replace_point(index,newX,newY);
-                        // console.log(model.get_point_list());
-                        // console.log(xVal, yVal);
-                        // console.log(oldX_1,oldY);
-                        // console.log([newX,newY]);
                         updateDisplay();
                         
                     
@@ -721,9 +740,6 @@ var lineFit = (function() {
                 .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
             }
 
-            
-
-        
         //returns a string that shows how the error was calculated by color
         function makeErrorString(color_scale){
             var points = model.get_point_list();
@@ -765,7 +781,12 @@ var lineFit = (function() {
             clearTable()
             var points = model.get_point_list();
             for(var i = 0; i<points.length; i++){
-                $('.data-table').append("<tr><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.lineAt(points[i][0]),2)+"</td><td>"+round_number(model.findError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findError(points[i]),2),2)+"</td></tr>");
+                if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
+                    $('.data-table').append("<tr><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.lineAt(points[i][0]),2)+"</td><td>"+round_number(model.findError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findError(points[i]),2),2)+"</td></tr>");
+                }
+                else{
+                    $('.data-table').append("<tr><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.quadAt(points[i][0]),2)+"</td><td>"+round_number(model.findQuadError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findQuadError(points[i]),2),2)+"</td></tr>");
+                }
             }
             
             var contentsX = $('.x-display').html();
@@ -849,8 +870,16 @@ var lineFit = (function() {
             else if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
                 displayLine(model.getCoeffs());
             }
+            else{
+                displayQuad();
+            }
             turnErrorDisplayOff();
-            turnErrorDisplayOn();
+            if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
+                turnErrorDisplayOn();
+            }
+            else{
+                turnQuadErrorDisplayOn();
+            }
             displayErrorInfo();
             updateTable();
             updateEquation();
