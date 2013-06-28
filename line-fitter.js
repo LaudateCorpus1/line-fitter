@@ -51,6 +51,10 @@ var lineFit = (function() {
             pointList[index] = [x,y];
         }
         
+        function clear_points(){
+            pointList = [];
+        }
+        
         function getIndexOf(x,y){
             for (var i = 0; i < pointList.length; i++) {
                 if(pointList[i][0] == x && pointList[i][1] == y)
@@ -220,22 +224,62 @@ var lineFit = (function() {
             }
             return variance;
         }
+        
+        function get_maxs_and_mins(){
+            if(pointList.length<1){
+                return {xMax: 10, xMin: -10, yMax: 10, yMin: -10};
+            }
+            var y_max = pointList[0][1];
+            var y_min = pointList[0][1];
+            var x_max = pointList[0][0];
+            var x_min = pointList[0][0];
+            for(var i=0; i<pointList.length; i++){
+                if(y_max<pointList[i][1]){
+                    y_max = pointList[i][1];
+                }
+                if(y_min>pointList[i][1]){
+                    y_min = pointList[i][1];
+                }
+                if(x_min>pointList[i][0]){
+                    x_min = pointList[i][0];
+                }
+                if(x_max<pointList[i][0]){
+                    x_max = pointList[i][0];
+                }
+            }
+            return {xMax: x_max, xMin: x_min, yMax: y_max, yMin: y_min};
+        }
+        
         return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, 
             change_a: change_a, change_b: change_b, findErrors: findErrors, findError: findError, lineAt: lineAt, bestFit: bestFit, 
             linear_regression: linear_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, 
+<<<<<<< HEAD
             points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point};
+=======
+            points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, remove_point: remove_point, clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins};
+>>>>>>> 26c926f151f526e652545ff406e29cd9fd7d48cf
     }
     
     function Controller(model) {
         function add_point_from_input(point){
             model.add_point(point);
         }
+        function add_anscombe_from_file(number){
+            model.clear_points();
+
+            for(var i=0;i<anscombes[number].length;i++){
+                model.add_point(anscombes[number][i]);
+            }
+            
+            var maxs_mins = model.get_maxs_and_mins();
+
+        }
         function change_best_fit_line(){
             var coeffs = model.bestFit(model.get_point_list())
             model.change_line(coeffs);
         }
 
-        return {add_point_from_input: add_point_from_input, change_best_fit_line: change_best_fit_line};
+        return {add_point_from_input: add_point_from_input, change_best_fit_line: change_best_fit_line, add_anscombe_from_file: add_anscombe_from_file};
     }
     
     function View(div,model,controller) {    
@@ -249,11 +293,29 @@ var lineFit = (function() {
         
         $(".graph").append("<div class='span8'><div class='row-fluid'><div class='controls'></div></div></div>");
         
+<<<<<<< HEAD
         $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point'>Add Point</button><button class = 'btn btn-small randomize'>Randomize Points</button><br></br></div></div></div>");
+=======
+        $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point'>Add Point</button><button class = 'btn btn-small randomize'>Randomize Points</button><div class = 'btn-group examples'></div><br></br></div></div></div>");
+>>>>>>> 26c926f151f526e652545ff406e29cd9fd7d48cf
         
         $(".table-container").append("<div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div>");
         var tooltip = d3.select("body").append("div").attr("class","point-error").text("");
-
+        
+        $('.examples').append('<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Examples<span class="caret"></span></a><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" id="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" id="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" id="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" id ="3">Anscombe 4</a></li></ul></li></ul>');
+        
+        $(".anscombe").on("click", function(){
+            var example_index = parseInt($(this).attr("id"));
+            controller.add_anscombe_from_file(example_index);
+            var maxs_mins = model.get_maxs_and_mins();
+            yMax = Math.ceil(1.2*maxs_mins.yMax);
+            yMin = 0;
+            xMax = Math.ceil(1.2*maxs_mins.xMax);
+            xMin = 0;
+            setupGraph(xMin,xMax,yMin,yMax);
+            updateDisplay();
+        })
+        
         var aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
             if ($('.plot-fit').prop('checked')==true){
                 $('.plot-fit').attr('checked', false);
@@ -283,7 +345,7 @@ var lineFit = (function() {
         model.change_b(0);
         $('.b-label').html(0);
         $('.a-label').html(0);
-        setupGraph();
+        setupGraph(-10,10,-10,10);
         setupTable();
         displayLine([0,0]);
 
@@ -315,7 +377,11 @@ var lineFit = (function() {
                 .on("mouseover", function(d){
                     point_index = model.getIndexOf(d[0],d[1]);
                     $('#'+point_index).closest("tr").css("outline","thin dashed blue");
+<<<<<<< HEAD
                     $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","black");
+=======
+                    $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","blue").css("stroke-width","3").css("stroke-dasharray","5,3");
+>>>>>>> 26c926f151f526e652545ff406e29cd9fd7d48cf
                     tooltip.html("<table class='table'><th>Error: "+round_number(model.findError([d[0],d[1]]),3)+"</th>"+"<th>Squared Error: "+round_number(Math.pow(model.findError([d[0],d[1]]),2),3)+"</th></table>").style("visibility", "visible");
                 })
                 .on("mousemove", function(){
@@ -386,6 +452,7 @@ var lineFit = (function() {
                     .on("dragend",function(){
                         dict.length = 0;
                         var dragPoint = d3.select(this);
+<<<<<<< HEAD
                         var newX = round_number(x_scale2(parseInt(dragPoint.attr("cx"))),0);
                         var newY = round_number(y_scale2(parseInt(dragPoint.attr("cy"))),0);
                         console.log([oldX,oldY]);
@@ -393,6 +460,13 @@ var lineFit = (function() {
                         model.replace_point(index,newX,newY);
                         console.log(model.get_point_list());
                         // console.log(xVal, yVal);
+=======
+                        var newX = round_number(x_scale2(parseInt(dragPoint.attr("cx"))),2);
+                        var newY = round_number(y_scale2(parseInt(dragPoint.attr("cy"))),2);
+                        var index = model.getIndexOf(oldX,oldY);                        
+                        model.remove_point(index)
+                        model.add_point([newX,newY]);
+>>>>>>> 26c926f151f526e652545ff406e29cd9fd7d48cf
                         updateDisplay();
                         
                     
@@ -550,8 +624,18 @@ var lineFit = (function() {
     }
     
     //set up svg with axes and labels
-    function setupGraph(){
+    function setupGraph(xMin,xMax,yMin,yMax){
+        xMin = xMin;
+        xMax = xMax;
+        yMin = yMin;
+        yMax = yMax;
 
+        x_scale = d3.scale.linear().domain([xMin,xMax]).range([0,chart_width]);
+        y_scale = d3.scale.linear().domain([yMin,yMax]).range([chart_height,0]);
+        x_scale2 = d3.scale.linear().domain([0,chart_width]).range([xMin,xMax]);
+        y_scale2 = d3.scale.linear().domain([chart_height,0]).range([yMin,yMax]);
+        
+        $(".chart-container").empty();
         chart = d3.select(".chart-container").append("svg").attr("class","chart").attr("height", outer_height).attr("width",outer_width).append("g").attr("transform","translate(" + margin.left + "," + margin.top + ")");
         
         chart.selectAll(".y-line").data(y_scale.ticks(10)).enter().append("line").attr("class", "y-line").attr('x1', 0).attr('x2', chart_width).attr('y1', y_scale).attr('y2',y_scale);
