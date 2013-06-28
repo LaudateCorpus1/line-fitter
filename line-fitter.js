@@ -285,30 +285,19 @@ var lineFit = (function() {
                 .domain([0, yMax])
                 .range(['#61A72D','#CC0000']);
         
-        div.append("<div class='container-fluid'><div class='row-fluid'><div class='span12 hero-unit'><h2>Linear Regression</h2></div></div><div class='row-fluid'><div class='span12 well'><div class='span8 graph'></div><div class='span4 table-container'></div><div class='control-row'></div></div></div>");
+        div.append("<div class='container-fluid'><div class='row-fluid'><div class='span12 hero-unit'><h2>Linear Regression</h2></div></div><div class='row-fluid'><div class='span12 well'><div class='span8 graph'></div><div class='span4 table-container'></div></div></div>");
 
         $(".graph").append("<div class='row-fluid'><div class='span8 chart-container'></div><div class='span4'><div class='graph-container'></div><div class='info-container'></div></div></div>");
         
-        $(".graph").append("<div class='span8'><div class='row-fluid'><div class='controls'></div></div></div>");
+        $(".graph").append("<div class='span8'><div class='row-fluid'><div class='buttons'></div><div class='controls'></div></div></div>");
         
-        $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point'>Add Point</button><button class = 'btn btn-small randomize'>Randomize Points</button><div class = 'btn-group examples'></div><br></br></div></div></div>");
+        $(".buttons").append('<span>Degree of Polynomial:</span><div class="btn-group" style="margin-left: 5px"><button class="btn btn-small horizontal-line">0</button><button class="btn btn-small line">1 (Linear)</button><button class="btn btn-small parabola">2 (Quadratic)</button></div>');
         
         $(".table-container").append("<div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div>");
         var tooltip = d3.select("body").append("div").attr("class","point-error").text("");
         
-        $('.examples').append('<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Examples<span class="caret"></span></a><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" id="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" id="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" id="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" id ="3">Anscombe 4</a></li></ul></li></ul>');
-        
-        $(".anscombe").on("click", function(){
-            var example_index = parseInt($(this).attr("id"));
-            controller.add_anscombe_from_file(example_index);
-            var maxs_mins = model.get_maxs_and_mins();
-            yMax = Math.ceil(1.2*maxs_mins.yMax);
-            yMin = 0;
-            xMax = Math.ceil(1.2*maxs_mins.xMax);
-            xMin = 0;
-            setupGraph(xMin,xMax,yMin,yMax);
-            updateDisplay();
-        })
+        //initialize the display as dealing with just lines
+        setupZeroDegreeControls();
         
         var aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
             if ($('.plot-fit').prop('checked')==true){
@@ -342,6 +331,29 @@ var lineFit = (function() {
         setupGraph(-10,10,-10,10);
         setupTable();
         displayLine([0,0]);
+
+        function setupLineControls(){
+            $(".controls").empty();
+            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point'>Add Point</button><br></br><div class = 'row-fluid'><button class = 'btn btn-small randomize'>Randomize Points</button><div class = 'btn-group examples'></div></div></div></div></div>");
+            $('.examples').append('<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Examples<span class="caret"></span></a><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li></ul>');
+            
+            $(".anscombe").on("click", function(){
+                var example_index = parseInt($(this).attr("data-index"));
+                controller.add_anscombe_from_file(example_index);
+                var maxs_mins = model.get_maxs_and_mins();
+                yMax = Math.ceil(1.2*maxs_mins.yMax);
+                yMin = 0;
+                xMax = Math.ceil(1.2*maxs_mins.xMax);
+                xMin = 0;
+                setupGraph(xMin,xMax,yMin,yMax);
+                updateDisplay();
+            })
+        }
+
+        function setupZeroDegreeControls(){
+            $(".controls").empty();
+            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point'>Add Point</button><br></br><div class = 'row-fluid'><button class = 'btn btn-small randomize'>Randomize Points</button></div></div></div></div>");
+        }
 
          //takes coefficients to y=ax+b and displays the corresponding on the graph
         function displayLine(coefficients){
