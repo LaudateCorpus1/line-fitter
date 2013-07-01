@@ -201,10 +201,17 @@ var lineFit = (function() {
             return sumOfSquareError;
         }
         
-        function points_with_square_error(){
+        function points_with_square_error(isQuadratic){
             var new_list = [];
-            for(var i=0; i<pointList.length; i++){
-                new_list.push([{y: Math.pow(findError(pointList[i]),2)}])
+            if(!isQuadratic){
+                for(var i=0; i<pointList.length; i++){
+                    new_list.push([{y: Math.pow(findError(pointList[i]),2)}])
+                }
+            }
+            else{
+                for(var i=0; i<pointList.length; i++){
+                    new_list.push([{y: Math.pow(findQuadError(pointList[i]),2)}])
+                }
             }
             return new_list;
         }
@@ -257,6 +264,29 @@ var lineFit = (function() {
             return [0,averageY];
         }
         
+        function bestFitQuadratic(){
+            var lineCoeffs; //coefficients of y=ax^2+bx+c in the form [a,b,c]
+            if(pointList.length <2){
+                lineCoeffs = [0,0];
+            }
+            else if(pointList.length ==2){
+                var x1 = pointList[0][0];
+                var x2 = pointList[1][0];
+                var y1 = pointList[0][1];
+                var y2 = pointList[1][1];
+                
+                var b = (y2-y1)/(x2-x1);
+                var c = y1 - a*x1;
+                
+                lineCoeffs = [b,c];
+            }
+            else{
+                lineCoeffs = quadratic_regression();
+            }
+                
+            return lineCoeffs;
+        }
+        
         //sums the errors of the points and returns optimized a and b for y = ax + b
         function linear_regression()
         {
@@ -302,14 +332,14 @@ var lineFit = (function() {
                 sumxy += (x*y);
                 sumx3 += (x*x*x);
                 sumx4 += (x*x*x*x);
-                sumx2y = (x*x)*y;
+                sumx2y += (x*x)*y;
             }
             
-            a = -(sumx*sumx3*sumx2y -sumx*sumxy*sumx4 -sumx2y*sumx2*sumx2 + sumx2*sumy*sumx4 + sumx2*sumx3*sumxy -sumy*sumx3*sumx3)/(-count*sumx2*sumx3 +count*sumx3*sumx3 + sumx*sumx*sumx4-2*sumx*sumx2*sumx3+sumx2*sumx2*sumx2)
+            c = -(sumx*sumx3*sumx2y -sumx*sumxy*sumx4 -sumx2y*sumx2*sumx2 + sumx2*sumy*sumx4 + sumx2*sumx3*sumxy -sumy*sumx3*sumx3)/(-count*sumx2*sumx4 +count*sumx3*sumx3 + sumx*sumx*sumx4-2*sumx*sumx2*sumx3+sumx2*sumx2*sumx2)
             
-            b = -(-count*sumx3*sumx2y + count*sumxy*sumx4 + sumx2y*sumx*sumx2 - sumx*sumy*sumx4 -sumxy*sumx2*sumx2 +sumy*sumx2*sumx3)/(-count*sumx2*sumx3 +count*sumx3*sumx3 + sumx*sumx*sumx4-2*sumx*sumx2*sumx3+sumx2*sumx2*sumx2)
+            b = -(-count*sumx3*sumx2y + count*sumxy*sumx4 + sumx2y*sumx*sumx2 - sumx*sumy*sumx4 -sumxy*sumx2*sumx2 +sumy*sumx2*sumx3)/(-count*sumx2*sumx4 +count*sumx3*sumx3 + sumx*sumx*sumx4-2*sumx*sumx2*sumx3+sumx2*sumx2*sumx2)
             
-            c = -(count*sumx2*sumx2y - count*sumxy*sumx3 - sumx2y*sumx*sumx + sumx*sumx2*sumxy - sumy*sumx2*sumx2 +sumy*sumx*sumx3)/(-count*sumx2*sumx3 +count*sumx3*sumx3 + sumx*sumx*sumx4-2*sumx*sumx2*sumx3+sumx2*sumx2*sumx2)
+            a = -(count*sumx2*sumx2y - count*sumxy*sumx3 - sumx2y*sumx*sumx + sumx*sumx2*sumxy - sumy*sumx2*sumx2 +sumy*sumx*sumx3)/(-count*sumx2*sumx4 +count*sumx3*sumx3 + sumx*sumx*sumx4-2*sumx*sumx2*sumx3+sumx2*sumx2*sumx2)
             
             return [a,b,c];
         }
@@ -357,7 +387,7 @@ var lineFit = (function() {
         }
         
         return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, 
-            change_a: change_a, get_a: get_a, get_c: get_c, change_b: change_b, get_b: get_b, change_c: change_c, findErrors: findErrors, findError: findError, lineAt: lineAt, quadAt: quadAt, bestFit: bestFit, linear_regression: linear_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point,clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins, change_point: change_point, bestFitHorizontal: bestFitHorizontal, getQuadCoeffs: getQuadCoeffs, findQuadError: findQuadError, sumOfQuadSquares: sumOfQuadSquares};
+            change_a: change_a, get_a: get_a, get_c: get_c, change_b: change_b, get_b: get_b, change_c: change_c, findErrors: findErrors, findError: findError, lineAt: lineAt, quadAt: quadAt, bestFit: bestFit, linear_regression: linear_regression, quadratic_regression: quadratic_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point,clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins, change_point: change_point, bestFitHorizontal: bestFitHorizontal, getQuadCoeffs: getQuadCoeffs, findQuadError: findQuadError, sumOfQuadSquares: sumOfQuadSquares, bestFitQuadratic: bestFitQuadratic};
    }
     
     function Controller(model) {
@@ -383,8 +413,14 @@ var lineFit = (function() {
             var coeffs = model.bestFitHorizontal()
             model.change_line(coeffs);
         }
+        function change_best_fit_quadratic(){
+            var coeffs = model.bestFitQuadratic();
+            model.change_a(coeffs[0]);
+            model.change_b(coeffs[1]);
+            model.change_c(coeffs[2]);
+        }
 
-        return {add_point_from_input: add_point_from_input, change_best_fit_line: change_best_fit_line, change_best_fit_line_horizontal: change_best_fit_line_horizontal, add_anscombe_from_file: add_anscombe_from_file};
+        return {add_point_from_input: add_point_from_input, change_best_fit_line: change_best_fit_line, change_best_fit_line_horizontal: change_best_fit_line_horizontal, change_best_fit_quadratic: change_best_fit_quadratic, add_anscombe_from_file: add_anscombe_from_file};
     }
     
     function View(div,model,controller) {    
@@ -623,7 +659,7 @@ var lineFit = (function() {
 //            var y1 = coefficients[0]*xMin+coefficients[1];
 //            var y2 = coefficients[0]*xMax+coefficients[1];
             
-            chart.selectAll(".best-fit").data(range(xMin,xMax,0.1)).enter().append("line").attr("class", "best-fit").attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.1);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.1)*(d+0.1) + coefficients[1]*(d+0.1)+coefficients[2])});
+            chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).enter().append("line").attr("class", "best-fit").attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.2);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.2)*(d+0.1) + coefficients[1]*(d+0.1)+coefficients[2])});
             
             updateTable();
             
@@ -671,7 +707,12 @@ var lineFit = (function() {
         function displayErrorInfo(){
             $(".info-container").empty();
             $(".info-container").append("<div class='row-fluid'><span class = 'squared'></span></div>");
-            $(".squared").html("Total squared error: " +round_number(model.findErrors().squareError,2));
+            if(!isQuadratic){
+                $(".squared").html("Total squared error: " +round_number(model.findErrors().squareError,2));
+            }
+            else{
+                $(".squared").html("Total squared error: " +round_number(model.sumOfQuadSquares(),2));
+            }
             
         }
         
@@ -847,7 +888,7 @@ var lineFit = (function() {
             $(".graph-container").empty();
             var maxValue = model.get_variance()*5;
             //var title = "Sum of Squares";
-            var data = model.points_with_square_error();
+            var data = model.points_with_square_error(isQuadratic);
             
             var normal_error = model.points_with_abs_error(isQuadratic);
             
@@ -882,13 +923,23 @@ var lineFit = (function() {
                 var coefficients = model.getCoeffs();
                 aSlider.slider("option","value",coefficients[0]);
                 $('.a-label').html(round_number(coefficients[0],2));
+                displayLine(coefficients);
             }
             
             else if($(".horizontal-line").hasClass("selected-degree")){
                 controller.change_best_fit_line_horizontal();
                 var coefficients = model.getCoeffs();
-            }    
-            displayLine(coefficients);
+                displayLine(coefficients);
+            }
+            else{
+                controller.change_best_fit_quadratic();
+                var coefficients = model.getQuadCoeffs();
+                aSlider.slider("option","value",coefficients[0]);
+                $('.a-label').html(round_number(coefficients[0],2));
+                cSlider.slider("option","value",coefficients[2]);
+                $('.c-label').html(round_number(coefficients[2],2));
+                displayQuad(coefficients);
+            }
             bSlider.slider("option","value",coefficients[1]);
             $('.b-label').html(round_number(coefficients[1],2));
             updateEquation();
