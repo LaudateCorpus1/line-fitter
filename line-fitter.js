@@ -563,7 +563,7 @@ var lineFit = (function() {
             $(".horizontal-line").addClass("selected-degree");
             $(".controls").empty();
             $('.examples').remove();
-            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'></div></div></div>");
+            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div></div></div>");
             isQuadratic = false;
             model.change_a(0);
             updateDisplay();
@@ -713,9 +713,9 @@ var lineFit = (function() {
                 .attr("cy", function(d){return y_scale(d[1])})
                 .on("mouseover", function(d){
                     point_index = model.getIndexOf(d[0],d[1]);
-                    $('#'+point_index).closest("tr").css("outline","thin dashed blue");
+                    $('#'+point_index).closest("tr").css("outline","2px solid blue");
                     $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","black");
-                    $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","blue").css("stroke-width","3").css("stroke-dasharray","5,3");
+                    $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","blue").css("stroke-width","3").css("stroke","5,3");
                     if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
                         tooltip.html("<table class='table'><th>Error: "+round_number(model.findError([d[0],d[1]]),3)+"</th><th>Squared Error: "+round_number(Math.pow(model.findError([d[0],d[1]]),2),3)+"</th></table>").style("visibility", "visible");
                     }
