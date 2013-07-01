@@ -193,6 +193,14 @@ var lineFit = (function() {
             return sumOfSquareError;
         }
         
+        function sumOfQuadSquares(){
+            var sumOfSquareError = 0;
+            for(var i=0; i<pointList.length; i++){
+                sumOfSquareError += Math.pow(findQuadError(pointList[i]),2);
+            }
+            return sumOfSquareError;
+        }
+        
         function points_with_square_error(){
             var new_list = [];
             for(var i=0; i<pointList.length; i++){
@@ -201,10 +209,17 @@ var lineFit = (function() {
             return new_list;
         }
         
-        function points_with_abs_error(){
+        function points_with_abs_error(isQuadratic){
             var new_list = [];
-            for(var i=0; i<pointList.length; i++){
-                new_list.push([{y: findError(pointList[i])}])
+            if(!isQuadratic){
+                for(var i=0; i<pointList.length; i++){
+                    new_list.push([{y: findError(pointList[i])}])
+                }
+            }
+            else{
+                for(var i=0; i<pointList.length; i++){
+                    new_list.push([{y: findQuadError(pointList[i])}])
+                }
             }
             return new_list;
         }
@@ -342,7 +357,7 @@ var lineFit = (function() {
         }
         
         return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, 
-            change_a: change_a, get_a: get_a, get_c: get_c, change_b: change_b, get_b: get_b, change_c: change_c, findErrors: findErrors, findError: findError, lineAt: lineAt, quadAt: quadAt, bestFit: bestFit, linear_regression: linear_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point,clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins, change_point: change_point, bestFitHorizontal: bestFitHorizontal, getQuadCoeffs: getQuadCoeffs, findQuadError: findQuadError};
+            change_a: change_a, get_a: get_a, get_c: get_c, change_b: change_b, get_b: get_b, change_c: change_c, findErrors: findErrors, findError: findError, lineAt: lineAt, quadAt: quadAt, bestFit: bestFit, linear_regression: linear_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point,clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins, change_point: change_point, bestFitHorizontal: bestFitHorizontal, getQuadCoeffs: getQuadCoeffs, findQuadError: findQuadError, sumOfQuadSquares: sumOfQuadSquares};
    }
     
     function Controller(model) {
@@ -378,6 +393,8 @@ var lineFit = (function() {
                 .range(['#61A72D','#CC0000']);
         
         div.append("<div class='container-fluid'><div class='row-fluid'><div class='span12 hero-unit'><h2>Linear Regression</h2></div></div><div class='row-fluid'><div class='span12 well'><div class='span8 graph'></div><div class='span4 table-container'></div></div></div>");
+        
+        $(".table-container").append("<div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point' type = 'button'>Add Point</button></div><br></br><div class = 'row-fluid'># of points: <input class='point-number'><button class = 'btn btn-small randomize'>Randomize Points</button></div>");
 
         $(".graph").append("<div class='row-fluid'><div class='span8 chart-container'></div><div class='span4'><div class='graph-container'></div><div class='info-container'></div></div></div>");
         
@@ -385,7 +402,6 @@ var lineFit = (function() {
         
         $(".buttons").append('<span>Degree of Polynomial:</span><div class="btn-group" style="margin-left: 5px"><button class="btn btn-small horizontal-line">0</button><button class="btn btn-small line">1 (Linear)</button><button class="btn btn-small parabola">2 (Quadratic)</button></div>');
         
-        $(".table-container").append("<div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div>");
         var tooltip = d3.select("body").append("div").attr("class","point-error").text("");
         
         $(".horizontal-line").on("click",function(){
@@ -398,15 +414,10 @@ var lineFit = (function() {
             setupQuadraticControls();
         })
         var aSlider,bSlider,cSlider;
+        var isQuadratic = false;
         //initialize the display as dealing with just lines
         setupLineControls();
         
-        aSlider.slider('option','value',0);
-        bSlider.slider('option','value',0);
-        model.change_a(0);
-        model.change_b(0);
-        $('.b-label').html(0);
-        $('.a-label').html(0);
         setupGraph(-10,10,-10,10);
         setupTable();
         displayLine([0,0]);
@@ -415,9 +426,12 @@ var lineFit = (function() {
             $(".selected-degree").removeClass("selected-degree");
             $(".line").addClass("selected-degree");
             $(".controls").empty();
-            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point' type = 'button'>Add Point</button><br></br><div class = 'row-fluid'># of points: <input class='point-number'><button class = 'btn btn-small randomize'>Randomize Points</button><div class = 'btn-group examples'></div></div></div></div></div>");
+            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div></div></div>");
+            $('.examples').remove();
+            $('.table-container .row-fluid:nth-of-type(3)').append("<div class = 'btn-group examples'></div>");
             $('.examples').append('<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Examples<span class="caret"></span></a><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li></ul>');
-                    
+            isQuadratic = false;
+            
             aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
                 if ($('.plot-fit').prop('checked')==true){
                     $('.plot-fit').attr('checked', false);
@@ -481,9 +495,12 @@ var lineFit = (function() {
             $(".selected-degree").removeClass("selected-degree");
             $(".horizontal-line").addClass("selected-degree");
             $(".controls").empty();
-            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point' style = 'margin-left:10px;'>Add Point</button><br></br><div class = 'row-fluid'># of points: <input class='point-number'><button class = 'btn btn-small randomize'>Randomize Points</button></div></div></div></div>");
+            $('.examples').remove();
+            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'></div></div></div>");
+            isQuadratic = false;
             model.change_a(0);
             updateDisplay();
+            
             bSlider = $(".b-slider").slider({ min: 1.5*yMin, max: 1.5*yMax, step: .01,
                 slide: function( event, ui ) {
                     if ($('.plot-fit').prop('checked')==true){
@@ -519,7 +536,12 @@ var lineFit = (function() {
             $(".selected-degree").removeClass("selected-degree");
             $(".parabola").addClass("selected-degree");
             $(".controls").empty();
-            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span4'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span4'>b:<div class='b-slider'></div><div class='b-label'></div></div><div class='span4'>c:<div class='c-slider'></div><div class='c-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point' type = 'button'>Add Point</button><br></br><div class = 'row-fluid'># of points: <input class='point-number'><button class = 'btn btn-small randomize'>Randomize Points</button></div></div></div></div>");
+            $('.examples').remove();
+            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span4'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span4'>b:<div class='b-slider'></div><div class='b-label'></div></div><div class='span4'>c:<div class='c-slider'></div><div class='c-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax<sup>2</sup>+bx+c</span></div></div></div></div>");
+            isQuadratic = true;
+            model.change_c(model.get_b());
+            model.change_b(model.get_a());
+            model.change_a(0);
             
             aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
                 if ($('.plot-fit').prop('checked')==true){
@@ -624,7 +646,12 @@ var lineFit = (function() {
                     $('#'+point_index).closest("tr").css("outline","thin dashed blue");
                     $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","black");
                     $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","blue").css("stroke-width","3").css("stroke-dasharray","5,3");
-                    tooltip.html("<table class='table'><th>Error: "+round_number(model.findError([d[0],d[1]]),3)+"</th><th>Squared Error: "+round_number(Math.pow(model.findError([d[0],d[1]]),2),3)+"</th></table>").style("visibility", "visible");
+                    if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
+                        tooltip.html("<table class='table'><th>Error: "+round_number(model.findError([d[0],d[1]]),3)+"</th><th>Squared Error: "+round_number(Math.pow(model.findError([d[0],d[1]]),2),3)+"</th></table>").style("visibility", "visible");
+                    }
+                    else{
+                        tooltip.html("<table class='table'><th>Error: "+round_number(model.findQuadError(d),3)+"</th><th>Squared Error: "+round_number(Math.pow(model.findQuadError(d),2),3)+"</th></table>").style("visibility", "visible");
+                    }
                 })
                 .on("mousemove", function(){
                     tooltip.style("top",(d3.event.pageY+10)+"px").style("left",(d3.event.pageX+10)+"px");
@@ -649,7 +676,7 @@ var lineFit = (function() {
         }
         
         function updateEquation(){
-            if($(".horizontal-line").hasClass("selected degree") || $(".line").hasClass("selected degree")){
+            if($(".horizontal-line").hasClass("selected-degree") || $(".line").hasClass("selected-degree")){
                 var coefficients = model.getCoeffs();
                 $('.equation').html("y = "+round_number(coefficients[0],2)+"x + (" + round_number(coefficients[1],2) + ")");
             }
@@ -805,8 +832,12 @@ var lineFit = (function() {
                     updateDisplay();
                 }
             });
-            
-             $('.data-table').append("<tr><th>Total:</th><td></td><td></td><td></td><th>"+round_number(model.sumOfSquares(),2)+"</th></tr>");
+            if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
+                $('.data-table').append("<tr><th>Total:</th><td></td><td></td><td></td><th>"+round_number(model.sumOfSquares(),2)+"</th></tr>");
+            }
+            else{
+                $('.data-table').append("<tr><th>Total:</th><td></td><td></td><td></td><th>"+round_number(model.sumOfQuadSquares(),2)+"</th></tr>");
+            }
         }
 
         function clearTable(){
@@ -815,9 +846,10 @@ var lineFit = (function() {
         function graph(){
             $(".graph-container").empty();
             var maxValue = model.get_variance()*5;
-            var title = "Sum of Squares";
+            //var title = "Sum of Squares";
             var data = model.points_with_square_error();
-            var normal_error = model.points_with_abs_error();
+            
+            var normal_error = model.points_with_abs_error(isQuadratic);
             
             var graph_outer_width = parseInt($(".graph-container").css("width"))*0.8;
             var graph_outer_height = 300;
@@ -831,7 +863,7 @@ var lineFit = (function() {
                 
             graph_chart.selectAll(".y-scale-label").data(graph_y_scale.ticks(4)).enter().append("text").attr("class", "y-scale-label").attr("x",graph_margin.left/2).attr('y',graph_y_scale).attr("text-anchor","end").attr("dy","0.3em").attr("dx",-graph_margin.left/2).text(function(d){return d});
             
-            graph_chart.selectAll(".chart-title").data([1]).enter().append("text").attr("class", "chart-title").attr("x",0).attr('y',0).text(title);
+            //graph_chart.selectAll(".chart-title").data([1]).enter().append("text").attr("class", "chart-title").attr("x",0).attr('y',0).text(title);
             
             if(data.length>0){
                 var stack = d3.layout.stack();
@@ -932,6 +964,9 @@ var lineFit = (function() {
     
     exports.setup = setup;
     exports.round_number = round_number;
+    exports.model = Model;
+    exports.view = View;
+    exports.controller = Controller;
 
     return exports;
 }());
