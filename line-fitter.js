@@ -33,11 +33,13 @@ var lineFit = (function() {
     var uX;
     
 ////////////////////////////////// helper functions    
-
+    
+    //rounds a number (number) to the specified amount of decimal points (decimals)
     function round_number(number,decimals){
         return Math.round(number*Math.pow(10,decimals))/Math.pow(10,decimals)
     }
     
+    //creates a range of values from start to stop in step sized increments
     function range(start, stop, step){
     if (typeof stop=='undefined'){
         // one param defined
@@ -58,6 +60,30 @@ var lineFit = (function() {
 };
 /////////////////////////////////// set up div functions
     
+    /* Model that contains instance variables:
+        pointList - points to be fitted, one array of many [x,y] arrays
+        currentCoeffs - [a,b] of y = ax + b
+        currentQuadCoeffs - [a,b,c] of y = ax^2 + bx + c
+        
+        functions:
+        add_point - adds a point to pointList
+        replace_point - takes an index and new x and y coordinates and replaces the point at the index with the new coordinates
+        clear_points - empties the pointList
+        getIndexOf - takes x and y coordinates and gets the index of the point in the pointList
+        get_point_list - returns the pointList
+        change_line - takes new coefficients to change currentCoeffs to
+        change_a - changes the first entry in currentCoeffs to the input
+        change_b - changes the second entry in currentCoeffs to the input
+        change_c - changes the third entry in currentQuadCoeffs to the input
+        get_a - returns the a value
+        get_b - returns the b value
+        get_c - returns the c value
+        getCoeffs - return current line coefficients
+        getQuadCoeffs - return current quadratic coefficients
+        randomize_points - generate a number of random points to add to pointList
+        make_random_point - makes a random point between xMax,xMin and yMax,yMin
+        findError - returns the error between a point and the line 
+    */
     function Model() {
         var pointList = []; //array of [x,y] arrays
         var currentCoeffs = [0,0]; //[a,b] where a and b are from y = ax + b
@@ -87,9 +113,6 @@ var lineFit = (function() {
         
         function get_point_list(){
             return pointList;
-        }
-        function change_point(index,newCoords){
-            pointList[index] = newCoords;
         }
         function change_line(newCoeffs){ //change the coefficients of the best fit line
             currentCoeffs = newCoeffs;
@@ -141,27 +164,7 @@ var lineFit = (function() {
             if(isNeg>0.5){
                 y = (-1)*y;
             }
-            return [Math.round(x),Math.round(y)]
-        }
-        
-        //sums the difference between where the point is and where the point would be on the line
-        function findErrors(){
-            var totalError = 0;
-            var totalSquareError = 0;
-            var maxError = findError(pointList[0])
-            var minError = findError(pointList[0])
-            for(var i=0; i<pointList.length; i++){
-                iError = findError(pointList[i]); //error at the ith point
-                totalError += iError;
-                totalSquareError += Math.pow(iError,2);
-                if(Math.abs(maxError) < Math.abs(iError)){
-                    maxError = iError;
-                }
-                if(Math.abs(minError) > Math.abs(iError)){
-                    minError = iError;
-                }
-            }
-            return {error: totalError, maxError: maxError, minError: minError, squareError: totalSquareError};
+            return [round_number(x,2),round_number(y,2)]
         }
         
         //finds the vertical error between a point and the line
@@ -170,6 +173,7 @@ var lineFit = (function() {
             return error;
         }
         
+        //finds the vertical error between a point and the quadratic
         function findQuadError(point){
             var error = point[1]-quadAt(point[0]);
             return error;
@@ -185,6 +189,7 @@ var lineFit = (function() {
             return (currentQuadCoeffs[0]*x*x)+currentQuadCoeffs[1]*x+currentQuadCoeffs[2];
         }
         
+        //sums the squared vertical error from each point to the line
         function sumOfSquares(){
             var sumOfSquareError = 0;
             for(var i=0; i<pointList.length; i++){
@@ -193,6 +198,7 @@ var lineFit = (function() {
             return sumOfSquareError;
         }
         
+        //sums the squared vertical error from each point to the quadratic 
         function sumOfQuadSquares(){
             var sumOfSquareError = 0;
             for(var i=0; i<pointList.length; i++){
@@ -201,6 +207,7 @@ var lineFit = (function() {
             return sumOfSquareError;
         }
         
+        //returns the array of points and their squared error
         function points_with_square_error(isQuadratic){
             var new_list = [];
             if(!isQuadratic){
@@ -216,6 +223,7 @@ var lineFit = (function() {
             return new_list;
         }
         
+        //returns the array of points and their absolute error
         function points_with_abs_error(isQuadratic){
             var new_list = [];
             if(!isQuadratic){
@@ -255,6 +263,7 @@ var lineFit = (function() {
             return lineCoeffs;
         }
         
+        //returns the best fit for a horizontal line
         function bestFitHorizontal(){
             var averageY = 0;
             var n = pointList.length;
@@ -264,10 +273,11 @@ var lineFit = (function() {
             return [0,averageY];
         }
         
+        //returns the best fit quadratic
         function bestFitQuadratic(){
             var lineCoeffs; //coefficients of y=ax^2+bx+c in the form [a,b,c]
             if(pointList.length <2){
-                lineCoeffs = [0,0];
+                lineCoeffs = [0,0,0];
             }
             else if(pointList.length ==2){
                 var x1 = pointList[0][0];
@@ -276,9 +286,9 @@ var lineFit = (function() {
                 var y2 = pointList[1][1];
                 
                 var b = (y2-y1)/(x2-x1);
-                var c = y1 - a*x1;
+                var c = y1 - b*x1;
                 
-                lineCoeffs = [b,c];
+                lineCoeffs = [0,b,c];
             }
             else{
                 lineCoeffs = quadratic_regression();
@@ -315,6 +325,7 @@ var lineFit = (function() {
             return [a,b];
         }
         
+        //sums the errors of the points and returns optimized a, b, and c for y = ax^2 + bx + c
         function quadratic_regression(){
             var i, x, y,
                 sumx=0, sumy=0, sumx2=0, sumxy=0, sumx3=0,sumx4=0,sumx2y=0,
@@ -344,6 +355,7 @@ var lineFit = (function() {
             return [a,b,c];
         }
         
+        //finds the statistical variance of the points
         function get_variance(){
             var n = pointList.length;
             if(n ==0){
@@ -361,6 +373,7 @@ var lineFit = (function() {
             return variance;
         }
         
+        //finds the maximums and minimums of the points
         function get_maxs_and_mins(){
             if(pointList.length<1){
                 return {xMax: 10, xMin: -10, yMax: 10, yMin: -10};
@@ -387,7 +400,7 @@ var lineFit = (function() {
         }
         
         return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, 
-            change_a: change_a, get_a: get_a, get_c: get_c, change_b: change_b, get_b: get_b, change_c: change_c, findErrors: findErrors, findError: findError, lineAt: lineAt, quadAt: quadAt, bestFit: bestFit, linear_regression: linear_regression, quadratic_regression: quadratic_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point,clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins, change_point: change_point, bestFitHorizontal: bestFitHorizontal, getQuadCoeffs: getQuadCoeffs, findQuadError: findQuadError, sumOfQuadSquares: sumOfQuadSquares, bestFitQuadratic: bestFitQuadratic};
+            change_a: change_a, get_a: get_a, get_c: get_c, change_b: change_b, get_b: get_b, change_c: change_c, findError: findError, lineAt: lineAt, quadAt: quadAt, bestFit: bestFit, linear_regression: linear_regression, quadratic_regression: quadratic_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point,clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins, bestFitHorizontal: bestFitHorizontal, getQuadCoeffs: getQuadCoeffs, findQuadError: findQuadError, sumOfQuadSquares: sumOfQuadSquares, bestFitQuadratic: bestFitQuadratic};
    }
     
     function Controller(model) {
@@ -457,7 +470,8 @@ var lineFit = (function() {
         setupGraph(-10,10,-10,10);
         setupTable();
         displayLine([0,0]);
-
+        
+        //controls for when the user wants to plot a first-order line
         function setupLineControls(){
             $(".selected-degree").removeClass("selected-degree");
             $(".line").addClass("selected-degree");
@@ -522,11 +536,9 @@ var lineFit = (function() {
                 model.randomize_points($(".point-number").val());
                 updateDisplay()
             })
-//            setupTable();
-//            updateTable();
-
         }
 
+        //controls for when the user wants to plot a horizontal (0 order) line
         function setupZeroDegreeControls(){
             $(".selected-degree").removeClass("selected-degree");
             $(".horizontal-line").addClass("selected-degree");
@@ -568,6 +580,7 @@ var lineFit = (function() {
             })
         }
         
+        //controls for when the user wants to plot a quadratic
         function setupQuadraticControls(){
             $(".selected-degree").removeClass("selected-degree");
             $(".parabola").addClass("selected-degree");
@@ -651,7 +664,8 @@ var lineFit = (function() {
                 turnErrorDisplayOn();
             }
         }
-
+        
+        //displays the model's current quadratic to the svg
         function displayQuad(){
             var coefficients = model.getQuadCoeffs();
             chart.selectAll(".best-fit").data(range(xMin,xMax,0.1)).remove();
@@ -659,7 +673,7 @@ var lineFit = (function() {
 //            var y1 = coefficients[0]*xMin+coefficients[1];
 //            var y2 = coefficients[0]*xMax+coefficients[1];
             
-            chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).enter().append("line").attr("class", "best-fit").attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.2);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.2)*(d+0.1) + coefficients[1]*(d+0.1)+coefficients[2])});
+            chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).enter().append("line").attr("class", "best-fit").attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.2);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.2)*(d+0.2) + coefficients[1]*(d+0.2)+coefficients[2])});
             
             updateTable();
             
@@ -668,7 +682,8 @@ var lineFit = (function() {
                 turnQuadErrorDisplayOn();
             }
         }
-
+    
+        //plots all the points in the model's pointList to the svg
         function updatePointsOnGraph(){
             chart.selectAll(".datapoint").remove();
             var points = model.get_point_list()
@@ -708,7 +723,7 @@ var lineFit = (function() {
             $(".info-container").empty();
             $(".info-container").append("<div class='row-fluid'><span class = 'squared'></span></div>");
             if(!isQuadratic){
-                $(".squared").html("Total squared error: " +round_number(model.findErrors().squareError,2));
+                $(".squared").html("Total squared error: " +round_number(model.sumOfSquares(),2));
             }
             else{
                 $(".squared").html("Total squared error: " +round_number(model.sumOfQuadSquares(),2));
@@ -716,6 +731,7 @@ var lineFit = (function() {
             
         }
         
+        //updates the displays equation to have the proper a, b [and c, for quadratics]
         function updateEquation(){
             if($(".horizontal-line").hasClass("selected-degree") || $(".line").hasClass("selected-degree")){
                 var coefficients = model.getCoeffs();
@@ -750,6 +766,7 @@ var lineFit = (function() {
             $(".squared").popover({trigger: 'hover', title: "Sum of Squares Value", content: makeErrorSquareString(color_scale).unsolved + "<br>=</br>" + makeErrorSquareString(color_scale).solved, html: true});
         }
 
+        //adds vertical bars from point to the quadratic (color-coded by how far away)
         function turnQuadErrorDisplayOn(){
         
             chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.quadAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findQuadError(d)); });
@@ -860,7 +877,7 @@ var lineFit = (function() {
             var contentsX = $('.x-display').html();
             $('.x-display').blur(function() {
                 if (contentsX!=$(this).html()){
-                    model.change_point(parseInt($(this).attr("id")),[parseFloat($(this).html()),parseFloat($(this).closest("tr").find("td:nth-of-type(2)").html())]);
+                    model.replace_point(parseInt($(this).attr("id")), parseFloat($(this).html()),parseFloat($(this).closest("tr").find("td:nth-of-type(2)").html()));
                     contentsX = $(this).html();
                     updateDisplay();
                 }
@@ -868,7 +885,7 @@ var lineFit = (function() {
             var contentsY = $('.y-display').html();
             $('.y-display').blur(function() {
                 if (contentsY!=$(this).html()){
-                    model.change_point(parseInt($(this).attr("id")),[parseFloat($(this).closest("tr").find("td:nth-of-type(1)").html()),parseFloat($(this).html())]);
+                    model.replace_point(parseInt($(this).attr("id")),parseFloat($(this).closest("tr").find("td:nth-of-type(1)").html()),parseFloat($(this).html()));
                     contentsY = $(this).html();
                     updateDisplay();
                 }
@@ -880,10 +897,13 @@ var lineFit = (function() {
                 $('.data-table').append("<tr><th>Total:</th><td></td><td></td><td></td><th>"+round_number(model.sumOfQuadSquares(),2)+"</th></tr>");
             }
         }
-
+    
+        //empties the data table
         function clearTable(){
             $(".data-table").find("tr:gt(0)").remove();
         }
+
+        //displays the graph of sum of squared error, color coded to show which point contributes which block of error
         function graph(){
             $(".graph-container").empty();
             var maxValue = model.get_variance()*5;
@@ -917,6 +937,7 @@ var lineFit = (function() {
 
       }
         
+        //plots the best fit line or quadratic
         function updateBestFitDisplay(){
             if($(".line").hasClass("selected-degree")){
                 controller.change_best_fit_line();
@@ -944,7 +965,8 @@ var lineFit = (function() {
             $('.b-label').html(round_number(coefficients[1],2));
             updateEquation();
         }
-        
+
+        //updates the points, error bars, graph, equation, and table
         function updateDisplay(){
             updatePointsOnGraph();
             if($('.plot-fit').prop("checked")){
