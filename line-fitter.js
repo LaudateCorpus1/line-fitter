@@ -404,6 +404,13 @@ var lineFit = (function() {
             var maxs_mins = model.get_maxs_and_mins();
 
         }
+
+        function add_unemployment_from_file(number){
+            model.clear_points();
+            for (var i = 0; i < unemployment[number].length; i++) {
+                model.add_point(unemployment[number][i]);
+            };
+        }
         function change_best_fit_line(){
             var coeffs = model.bestFit()
             model.change_line(coeffs);
@@ -420,7 +427,7 @@ var lineFit = (function() {
             model.change_c(coeffs[2]);
         }
 
-        return {add_point_from_input: add_point_from_input, change_best_fit_line: change_best_fit_line, change_best_fit_line_horizontal: change_best_fit_line_horizontal, change_best_fit_quadratic: change_best_fit_quadratic, add_anscombe_from_file: add_anscombe_from_file};
+        return {add_unemployment_from_file:add_unemployment_from_file, add_point_from_input: add_point_from_input, change_best_fit_line: change_best_fit_line, change_best_fit_line_horizontal: change_best_fit_line_horizontal, change_best_fit_quadratic: change_best_fit_quadratic, add_anscombe_from_file: add_anscombe_from_file};
     }
     
     function View(div,model,controller) {    
@@ -464,8 +471,8 @@ var lineFit = (function() {
             $(".controls").empty();
             $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div></div></div>");
             $('.examples').remove();
-            $('.table-container .row-fluid:nth-of-type(3)').append("<div class = 'btn-group examples'></div>");
-            $('.examples').append('<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Examples<span class="caret"></span></a><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li></ul>');
+            $('.table-container .row-fluid:nth-of-type(3)').append("<p><div class = 'btn-group examples'></div>");
+            $('.examples').append('<button class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Examples<span class="caret"></span></button><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li><li class = "dropdown-submenu"><a tabindex="-1" href="#" class = "work">Unemployment (2008-Present)</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="work" data-index="0">2008</a></li><li><a tabindex="-1" href="#" class="work" data-index="1">2009</a></li></ul></li></ul>');
             isQuadratic = false;
             
             aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
@@ -497,6 +504,18 @@ var lineFit = (function() {
             $(".anscombe").on("click", function(){
                 var example_index = parseInt($(this).attr("data-index"));
                 controller.add_anscombe_from_file(example_index);
+                var maxs_mins = model.get_maxs_and_mins();
+                yMax = Math.ceil(1.2*maxs_mins.yMax);
+                yMin = 0;
+                xMax = Math.ceil(1.2*maxs_mins.xMax);
+                xMin = 0;
+                setupGraph(xMin,xMax,yMin,yMax);
+                updateDisplay();
+            });
+
+            $('.work').on("click",function(){
+                var example_index = parseInt($(this).attr("data-index"));
+                controller.add_unemployment_from_file(example_index);
                 var maxs_mins = model.get_maxs_and_mins();
                 yMax = Math.ceil(1.2*maxs_mins.yMax);
                 yMin = 0;
@@ -697,6 +716,10 @@ var lineFit = (function() {
                     $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","none");
                     tooltip.style("visibility", "hidden");
                 })
+                .attr("id", function(d){
+                    point_index = model.getIndexOf(d[0],d[1]);
+                    return "point"+point_index;
+                })
                 .style("fill","blue")
                 // .on("click",clicked)
                 .call(move)
@@ -806,6 +829,7 @@ var lineFit = (function() {
                 dragPoint
                 .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
                 .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
+                console.log(dragPoint.attr('id'));
             }
 
         //returns a string that shows how the error was calculated by color
