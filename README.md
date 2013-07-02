@@ -7,7 +7,7 @@ Mentor: Fredo Durand (fredopdurand@gmail.com)
 
 General Description: this applet helps students visualize the process of finding a line of best-fit by interactively minimizing the sum of least squares. For use in the MIT class 6.00 (Introduction to Computer Science and Programming) to understand least-squares algorithms.
 
-Uses: Bootstrap, Javascrip t, CSS, JQuery, JQueryUI, d3
+Uses: Bootstrap, Javascript, CSS, jQuery, jQueryUI, d3
 
 To view the demo:
 
