@@ -740,7 +740,7 @@ var lineFit = (function() {
                 })
                 .attr("id", function(d){
                     point_index = model.getIndexOf(d[0],d[1]);
-                    return "point"+point_index;
+                    return point_index;
                 })
                 .style("fill","blue")
                 // .on("click",clicked)
@@ -817,24 +817,9 @@ var lineFit = (function() {
                         var newX = round_number(x_scale2(parseInt(dragPoint.attr("cx"))),1);
                         var newY = round_number(y_scale2(parseInt(dragPoint.attr("cy"))),0);
                         console.log(model.get_point_list());
-                        if (model.getIndexOf(oldX_1,oldY) != -1){
-                            var index = model.getIndexOf(oldX_1,oldY);
-                        }
-
-                        else if (model.getIndexOf(uX,oldY)!= -1){
-                            var index = model.getIndexOf(uX,oldY);
-                        }
-
-                        else if (model.getIndexOf(uX,oldY) == -1 && model.getIndexOf(oldX_1,oldY) == -1){
-                            var copyX = oldX_1;
-                            var newUx = round_number(copyX+.1,1);
-                            var index  = model.getIndexOf(newUx,oldY);
-                        }       
-                        console.log(uX+"......"+oldX_1+"......."+newUx)
-
                         console.log(index);
                  
-                        model.replace_point(index,newX,newY);
+                        model.replace_point(dragPoint.attr("id"),newX,newY);
                         updateDisplay();
                         
                     
@@ -842,14 +827,6 @@ var lineFit = (function() {
 
             function drag(){
                 var dragPoint = d3.select(this);
-                xVal = x_scale2(parseInt(dragPoint.attr("cx")));
-                yVal = y_scale2(parseInt(dragPoint.attr("cy")));
-                dict.push({'x':xVal,'y':yVal});
-                oldX_1 = round_number((dict[0].x),1);
-                oldY = round_number((dict[0].y),0);
-
-                uX = Math.round(oldX_1*10)/10;
-
                 dragPoint
                 .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
                 .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
