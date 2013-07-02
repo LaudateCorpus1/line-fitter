@@ -511,7 +511,7 @@ var lineFit = (function() {
             $('.examples').remove();
             $('.table-container .row-fluid:nth-of-type(3)').append("<p><div class = 'btn-group examples'></div>");
             $('.examples').append('<button class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Example Data Sets<span class="caret"></span></button><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li><li class = "dropdown-submenu"><a tabindex="-1" href="#" class = "work">Unemployment Rate</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="work" data-index="0">2008</a></li><li><a tabindex="-1" href="#" class="work" data-index="1">2009</a></li></ul></li></ul>');
-            isQuadratic = false;
+            isQuadratic = false; //flag for future methods that are different for lines and parabolas
             
             aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
                 if ($('.plot-fit').prop('checked')==true){
@@ -710,17 +710,22 @@ var lineFit = (function() {
                 
                 chart.selectAll(".best-fit").data(coefficients).enter().append("line").attr("class", "best-fit").attr('x1', x_scale(xMin)).attr('x2', x_scale(xMax)).attr('y1', y_scale(y1)).attr('y2',y_scale(y2));
                 
-                turnErrorDisplayOff()
+                turnErrorDisplayOff();
                 turnErrorDisplayOn(false);
             }
             else{
 //                chart.selectAll(".best-fit").data(range(xMin,xMax,0.1)).remove();
 //                chart.selectAll(".best-fit").data(coefficients).remove();
-//    
+
                 var y1 = coefficients[0]*xMin+coefficients[1];
                 var y2 = coefficients[0]*xMax+coefficients[1];
                 
-                chart.selectAll(".best-fit").transition().duration(750).attr('x1', x_scale(xMin)).attr('x2', x_scale(xMax)).attr('y1', y_scale(y1)).attr('y2',y_scale(y2));
+                if(chart.selectAll(".best-fit")[0].length> 0){
+                    chart.selectAll(".best-fit").transition().duration(750).attr('x1', x_scale(xMin)).attr('x2', x_scale(xMax)).attr('y1', y_scale(y1)).attr('y2',y_scale(y2));
+                }
+                else{
+                     chart.selectAll(".best-fit").data(coefficients).enter().append("line").attr("class", "best-fit").attr('x1', x_scale(xMin)).attr('x2', x_scale(xMax)).attr('y1', y_scale(y1)).attr('y2',y_scale(y2));
+                }
                 
                 turnErrorDisplayOn(true);
             }
@@ -741,12 +746,11 @@ var lineFit = (function() {
             }
             else{
                 if(chart.selectAll(".best-fit")[0].length < 3){
-                    console.log(chart.selectAll(".best-fit")[0])
                     chart.selectAll(".best-fit").remove();
                     chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).enter().append("line").attr("class", "best-fit").attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.2);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.2)*(d+0.2) + coefficients[1]*(d+0.2)+coefficients[2])});
                 }
                 else{
-                    chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).transition().duration(1000).attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.2);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.2)*(d+0.2) + coefficients[1]*(d+0.2)+coefficients[2])});
+                    chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).transition().duration(750).attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.2);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.2)*(d+0.2) + coefficients[1]*(d+0.2)+coefficients[2])});
                 }
             }
             
@@ -863,7 +867,6 @@ var lineFit = (function() {
             dragPoint
                 var sdsa = x_scale2(parseInt(dragPoint.attr("cx")));
                 var odhas = y_scale2(parseInt(dragPoint.attr("cy")));
-                console.log(sdsa,odhas);
         }
             
         //adds vertical bars from point to best-fit line (with color scale that displays how much error)
@@ -900,8 +903,6 @@ var lineFit = (function() {
                         var dragPoint = d3.select(this);
                         var newX = round_number(x_scale2(parseInt(dragPoint.attr("cx"))),1);
                         var newY = round_number(y_scale2(parseInt(dragPoint.attr("cy"))),0);
-                        console.log(model.get_point_list());
-                        console.log(index);
                  
                         model.replace_point(dragPoint.attr("id"),newX,newY);
                         updateDisplay();
@@ -914,7 +915,6 @@ var lineFit = (function() {
                 dragPoint
                 .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
                 .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
-                console.log(dragPoint.attr("id"));
             }
         
         //returns a string that shows how the sum of squares error was calculated by color
