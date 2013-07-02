@@ -765,7 +765,7 @@ var lineFit = (function() {
                 .attr("cy", function(d){return y_scale(d[1])})
                 .on("mouseover", function(d){
                     point_index = model.getIndexOf(d[0],d[1]);
-                    $('#'+point_index).closest("tr").css("outline","2px solid blue");
+                    $('tr').find('#'+point_index).closest("tr").css("outline","2px solid blue");
                     $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","black");
                     $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","blue").css("stroke-width","3").css("stroke","5,3");
                     if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
@@ -779,7 +779,7 @@ var lineFit = (function() {
                     tooltip.style("top",(d3.event.pageY+10)+"px").style("left",(d3.event.pageX+10)+"px");
                 })
                 .on("mouseout",function(){
-                    $('#'+point_index).closest("tr").css("outline","none");
+                    $('tr').find('#'+point_index).closest("tr").css("outline","none");
                     $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","none");
                     tooltip.style("visibility", "hidden");
                 })
