@@ -147,6 +147,10 @@ var lineFit = (function() {
         
         function randomize_points(number){
             pointList = [];
+            yMin = -10;
+            yMax = 10;
+            xMax = 10;
+            xMin = -10;
             for(var i=0; i<number; i++){
                 pointList.push(make_random_point());
             }
@@ -413,9 +417,6 @@ var lineFit = (function() {
             for(var i=0;i<anscombes[number].length;i++){
                 model.add_point(anscombes[number][i]);
             }
-            
-            var maxs_mins = model.get_maxs_and_mins();
-
         }
 
         function add_unemployment_from_file(number){
@@ -577,6 +578,7 @@ var lineFit = (function() {
             $('.randomize').on("click",function(){
                 if ($('.point-number').val() > 0){
                     model.randomize_points($(".point-number").val());
+                    setupGraph(xMin,xMax,yMin,yMax);
                     updateDisplay()
                 }
 
@@ -788,12 +790,43 @@ var lineFit = (function() {
         function updateEquation(){
             if($(".horizontal-line").hasClass("selected-degree") || $(".line").hasClass("selected-degree")){
                 var coefficients = model.getCoeffs();
-                $('.equation').html("y = "+round_number(coefficients[0],2)+"x + (" + round_number(coefficients[1],2) + ")");
+                $('.equation').html("y = <span class='a-display' contenteditable = 'true'>"+round_number(coefficients[0],2)+"</span>x + (<span class='b-display' contenteditable = 'true'>" + round_number(coefficients[1],2) + "</span>)");
             }
             else{
                 var coefficients = model.getQuadCoeffs();
-                $('.equation').html("y = "+round_number(coefficients[0],2)+"x<sup>2</sup> + (" + round_number(coefficients[1],2) + ")x + "+ round_number(coefficients[2],2));
+                $('.equation').html("y = <span class='a-display' contenteditable = 'true'>"+round_number(coefficients[0],2)+"</span>x<sup>2</sup> + (<span class='b-display' contenteditable = 'true'>" + round_number(coefficients[1],2) + "</span>)x + <span class='c-display' contenteditable = 'true'>"+ round_number(coefficients[2],2))+"</span>";
             }
+            
+            var contentsA = $('.a-display').html();
+            $('.a-display').blur(function() {
+                if (contentsA!=$(this).html()){
+                    model.change_a(parseFloat($(this).html()));
+                    contentsA = $(this).html();
+                    aSlider.slider("option","value",model.get_a());
+                    $('.a-label').html(round_number(model.get_a(),2));
+                    updateDisplay();
+                }
+            });
+            var contentsB = $('.b-display').html();
+            $('.b-display').blur(function() {
+                if (contentsB!=$(this).html()){
+                    model.change_b(parseFloat($(this).html()));
+                    contentsB = $(this).html();
+                    bSlider.slider("option","value",model.get_b());
+                    $('.b-label').html(round_number(model.get_b(),2));
+                    updateDisplay();
+                }
+            });
+            var contentsC = $('.c-display').html();
+            $('.c-display').blur(function() {
+                if (contentsC!=$(this).html()){
+                    model.change_c(parseFloat($(this).html()));
+                    contentsC = $(this).html();
+                    cSlider.slider("option","value",model.get_c());
+                    $('.c-label').html(round_number(model.get_c(),2));
+                    updateDisplay();
+                }
+            });
         }
 
         function removeErrorInfo(){
@@ -1013,7 +1046,7 @@ var lineFit = (function() {
 
 
         
-        return {displayLine: displayLine, updateDisplay: updateDisplay};
+        return {displayLine: displayLine, displayQuad: displayQuad, displayErrorInfo: displayErrorInfo, updateBestFitDisplay: updateBestFitDisplay, updateEquation: updateEquation, updateTable: updateTable, updatePointsOnGraph: updatePointsOnGraph, updateDisplay: updateDisplay};
     }
     
     //set up svg with axes and labels
@@ -1048,6 +1081,7 @@ var lineFit = (function() {
         var controller = Controller(model);
         var view = View(div, model, controller);
         
+        //initializes a nice little set of 4 points to begin with
         var points = [[4,4],[1,1],[2,1],[-3,6]];
         for(var i =0; i<points.length; i++){
             model.add_point([points[i][0],points[i][1]]);
