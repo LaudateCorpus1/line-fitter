@@ -411,6 +411,7 @@ var lineFit = (function() {
         function add_point_from_input(point){
             model.add_point(point);
         }
+
         function add_anscombe_from_file(number){
             model.clear_points();
 
@@ -610,9 +611,17 @@ var lineFit = (function() {
         }
         
         //sets up the buttons
+
         function setupButtons(){
+            var isValidInput = true;
             $('.add-point').on("click",function(){
-                if (isNaN(parseFloat($('.x-adder').val())) && isNaN(parseFloat($('.y-adder').val()))){
+                var inputVal = $('.x-adder').val();
+                for (var i = 0; i < inputVal.length; i++) {
+                    if (inputVal[i] == '+'|| '-'||'/'||'*'||'x'||'÷'||'='){
+                        isValidInput = false;
+                    }
+                };
+                if (!isValidInput || isNaN(parseFloat($('.x-adder').val())) && isNaN(parseFloat($('.y-adder').val()))){
                     window.alert("Please input real numbers");
                 }
                 else{
@@ -863,9 +872,6 @@ var lineFit = (function() {
             
             $(".squared").popover({trigger: 'hover', title: "Sum of Squares Value", content: makeErrorSquareString(color_scale).unsolved + "<br>=</br>" + makeErrorSquareString(color_scale).solved, html: true});
         }
-        
-        var xVal, yVal;
-
 
         var move =  d3.behavior.drag()
                     .on("drag",drag)
@@ -1102,3 +1108,10 @@ $(document).ready(function() {
     $('#elem').popover();
     $('#elem1').popover();
 });
+
+$(window).resize(function(){
+    var bodyheight = $(document).height(); 
+    var bodywidth = $(document).width();
+    $('.line-fit').height(bodyheight);
+    $('.line-fit').width(bodywidth);
+})
