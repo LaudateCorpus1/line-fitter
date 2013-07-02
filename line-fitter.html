@@ -16,43 +16,55 @@
         
     </head>
     
-    <body>
+<body>
         <!-- the navigation bar at the top of the page is created here -->
         <div class = "navbar navbar">
             <div class = "navbar-inner">
                 <div class = "container">
                 <a class = "brand" href="#aboutModal" data-toggle = "modal" style = "margin-left:1px;border-radius:5px;">About</a>
-                <a class = "brand" href = "https://github.com/laurabreiman/line-fitter" style = "margin-left:3px"><i class = "icon-github-sign"></i></a>
-                
+                <a class = "brand" id = "elem" rel = "popover" data-placement = "bottom" data-trigger = "hover" data-content = "Access our GitHub Repository" href = "https://github.com/laurabreiman/line-fitter" style = "margin-left:3px"><i class = "icon-github-sign"></i></a>
+                <a class = "brand" id = "elem1" rel = "popover" data-placement = "bottom" data-trigger = "hover" data-content = "Found Bugs? Report to smohan94@mit.edu" href = "#" style = "margin-left:3px"><i class = "icon-bug"></i></a>
+                </div>
             </div>
         </div>
-  </div>
 
 <!-- generating the about modal here -->
 
 <div id="aboutModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel" aria-hidden="true">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <div class = "tabs">
-    <ul id="myTab" class="nav nav-tabs">
-      <li><a href="#instructions" data-toggle="tab">Instructions</a></li>
-      <li><a href="#credits" data-toggle="tab">Credits</a></li>
-      <li><a href="#help" data-toggle="tab">Help</a></li>
-      <li><a href="#embed" data-toggle = "tab">Embedding</a>
-    </ul>
- </div>
-  <div class = "tab-content">
-        <div class="tab-pane fade in active" id="credits">Our Mentor: Professor Fr&eacute;do Durand<br> Tools Used: D3, jQuery, jQueryUI, and Bootstrap</div>
-        <div class ="tab-pane fade in" id = "instructions">How the Widget works</div>
-        <div class ="tab-pane fade in" id = "help">Help</div>
-  </div>
-</div>
-</div>
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <div class = "tabs">
+        <ul id="myTab" class="nav nav-tabs">
+          <li><a href="#instructions" data-toggle="tab">Instructions</a></li>
+          <li><a href="#credits" data-toggle="tab">Credits</a></li>
+          <li><a href="#help" data-toggle="tab">Help</a></li>
+          <li><a href="#embed" data-toggle = "tab">Embedding</a>
+        </ul>
+        </div>
+    </div>
 
-  <div class="modal-body">
+
+    <div class="modal-body">
      <div class = "tab-content">
-        <div class="tab-pane fade in" id="credits">Our Mentor: Professor Fr&eacute;do Durand<br> Tools Used: D3, jQuery, and Bootstrap</div>
-        <div class ="tab-pane fade in" id = "instructions">How the Widget works</div>
+        <div class="tab-pane fade in" id="credits"><text style = "font-size:14pt">Our Mentor: Professor Fr&eacute;do Durand<br> Tools Used: D3, jQuery, and Bootstrap</text></div>
+        <div class ="tab-pane fade in" id = "instructions"><h3>How the Widget works:</h3>
+            <text style = "font-size:12pt;font-family:Times;">
+                1. In order to add point values, enter the x and y coordinates in the respective input fields and hit 'Add Point.'
+                <br>
+                2. The point table above contains the xy coordinates of the point, the predicted y and the error and squared error values. You can edit the Observed X and Observed Y by clicking on the number and typing in the number of your choice. Then, click on the graph and the graph will update itself.
+                <br>
+                3. If you don't have a defined set of points, you can create random points. Simply enter the number of points you wish to generate in the '# of points' box and hit 'Randomize Points'. This will generate the amount of random points that you specified.
+                <br>
+                4.To plot the line of best-fit, check the Plot Best-Fit checkbox. That will display the line of best fit on your graph.
+                <br>
+                5. You will also notice a graph that appears between the graphing area and the table. This graph indicates the value of the total squared error. In other words, as your error increases, the graph's height will increase with it. 
+                <br>
+                6. You can also drag points around the graph and see how they change the line of best fit. In addition, you can use the sliders (located below 'Degree of Polynomial') to change the coefficient values and see how the line of best fit is changing.
+
+            </text>
+
+        </div>
+
         <div class ="tab-pane fade in" id = "help">Help</div>
         <div class ="tab-pane fade in" id = "embed"><h3>How to use our widget in your own webpage</h3><br><text style = "font-size:12pt;">If you wish to use the applet as is, simply paste the following HTML Code into your own code: </text>
             <div class = "embedcode">
@@ -78,11 +90,9 @@
         </div>
     </div>
 </div>
-  <div class="modal-footer">
-    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" style = "margin-left:320px">Close</button>
-   
-    
-  </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" style = "margin-left:320px">Close</button>
+    </div>
 </div>    
 
 

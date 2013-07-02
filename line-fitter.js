@@ -1100,4 +1100,6 @@ var lineFit = (function() {
 
 $(document).ready(function() {
     lineFit.setup($('.line-fit'));
+    $('#elem').popover();
+    $('#elem1').popover();
 });
