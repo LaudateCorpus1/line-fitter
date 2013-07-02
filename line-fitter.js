@@ -830,7 +830,7 @@ var lineFit = (function() {
                 dragPoint
                 .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
                 .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
-                console.log(dragPoint.attr('id'));
+                console.log(dragPoint.attr("id"));
             }
 
         //returns a string that shows how the error was calculated by color
