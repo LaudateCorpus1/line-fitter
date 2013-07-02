@@ -17,7 +17,47 @@
     </head>
     
     <body>
+        <!-- the navigation bar at the top of the page is created here -->
+        <div class = "navbar navbar">
+            <div class = "navbar-inner">
+                <div class = "container">
+                <a class = "brand" href="#aboutModal" data-toggle = "modal" style = "background:red;margin-left:1px;color:white;border-radius:5px;">About</a>
+                <a class = "brand" href = "https://github.com/laurabreiman/line-fitter" style = "margin-left:3px"><i class = "icon-github-sign"></i></a>
+                
+            </div>
+        </div>
+  </div>
+
+<!-- generating the about modal here -->
+
+<div id="aboutModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <div class = "tabs">
+    <ul id="myTab" class="nav nav-tabs">
+      <li><a href="#instructions" data-toggle="tab">Instructions</a></li>
+      <li><a href="#credits" data-toggle="tab">Credits</a></li>
+      <li><a href="#help" data-toggle="tab">Help</a></li>
+    </ul>
+  <div class = "tab-content">
+        <div class="tab-pane fade in active" id="credits">Laura Breiman and Samarth Mohan</div>
+        <div class ="tab-pane fade in" id = "instructions">How the Widget works</div>
+        <div class ="tab-pane fade in" id = "help">Help</div>
+  </div>
+</div>
+</div>
+  <div class="modal-body">
     
+</div>
+  <div class="modal-footer">
+     &copy; _____corporation
+    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" style = "margin-left:320px">Close</button>
+   
+    
+  </div>
+</div>    
+
+
     <div class="line-fit"></div>
     <script src="line-fitter.js"></script>
     </body>
