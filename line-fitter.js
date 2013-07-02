@@ -613,37 +613,23 @@ var lineFit = (function() {
         //sets up the buttons
 
         function setupButtons(){
-            var isValidInput = true;
             $('.add-point').on("click",function(){
-<<<<<<< HEAD
-                var inputVal = $('.x-adder').val();
-                for (var i = 0; i < inputVal.length; i++) {
-                    if (inputVal[i] == '+'|| '-'||'/'||'*'||'x'||'÷'||'='){
-                        isValidInput = false;
-                    }
-                };
+                var inputVal = $('.x-adder').val()+$('.y-adder').val();
+                
+                if (inputVal.indexOf('+') != -1||inputVal.indexOf('-') != -1||inputVal.indexOf('*') != -1||inputVal.indexOf('/') != -1||inputVal.indexOf('=') != -1) {
+                    var isValidInput = false;
+                }
+
+                else{
+                    isValidInput = true;
+                }
+
                 if (!isValidInput || isNaN(parseFloat($('.x-adder').val())) && isNaN(parseFloat($('.y-adder').val()))){
                     window.alert("Please input real numbers");
-=======
-                if (isNaN(parseFloat($('.x-adder').val())) || isNaN(parseFloat($('.y-adder').val()))){
-                    //window.alert("Please input real numbers");
-                    $(".add-point").after('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Sorry!</strong> Please enter real numbers </div>');
->>>>>>> 93b42518b531c0c016748b602dbd7ec4787e8a1f
                 }
                 else{
-                    var x = parseFloat($('.x-adder').val());
-                    var y = parseFloat($('.y-adder').val());
-                    var point = [x,y]
+                    point = [parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val())]
                     model.add_point(point);
-                    if(x > xMax || x < xMin || y > yMax || y < yMin){
-                        var maxs_mins = model.get_maxs_and_mins();
-                        console.log(maxs_mins);
-                        yMax = Math.max(Math.ceil(1.2*maxs_mins.yMax),10);
-                        yMin = Math.min(Math.floor(1.2*maxs_mins.yMin),-10);
-                        xMax = Math.max(Math.ceil(1.2*maxs_mins.xMax),10);
-                        xMin = Math.min(Math.floor(1.2*maxs_mins.xMin),-10);
-                        setupGraph(xMin,xMax,yMin,yMax);
-                    }
                     updateDisplay()
                     
                 }
@@ -753,8 +739,10 @@ var lineFit = (function() {
             
             updateTable();
             
-            turnErrorDisplayOff()
-            turnQuadErrorDisplayOn(animate);
+            if(model.get_point_list().length > 0){
+                turnErrorDisplayOff()
+                turnQuadErrorDisplayOn();
+            }
         }
     
         //plots all the points in the model's pointList to the svg
@@ -879,13 +867,9 @@ var lineFit = (function() {
         }
 
         //adds vertical bars from point to the quadratic (color-coded by how far away)
-        function turnQuadErrorDisplayOn(animate){
-            if(!animate){
-                chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.quadAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findQuadError(d)); });
-            }
-            else{
-                chart.selectAll(".error-line").transition().duration(1000).attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.quadAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findQuadError(d)); });
-            }
+        function turnQuadErrorDisplayOn(){
+        
+            chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.quadAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findQuadError(d)); });
             
             displayErrorInfo()
             
@@ -1060,7 +1044,7 @@ var lineFit = (function() {
                 turnErrorDisplayOn(false);
             }
             else{
-                turnQuadErrorDisplayOn(false);
+                turnQuadErrorDisplayOn();
             }
             displayErrorInfo();
             updateTable();
