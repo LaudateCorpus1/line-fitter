@@ -482,7 +482,6 @@ var lineFit = (function() {
         
         $(".buttons").append('<span>Degree of Polynomial:</span><div class="btn-group" style="margin-left: 5px"><button class="btn btn-small horizontal-line">0</button><button class="btn btn-small line">1 (Linear)</button><button class="btn btn-small parabola">2 (Quadratic)</button></div>');
         
-        $(".controls").empty();
         $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span4'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span4'>b:<div class='b-slider'></div><div class='b-label'></div></div><div class='span4'>c:<div class='c-slider'></div><div class='c-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax<sup>2</sup>+bx+c</span></div></div></div></div>");
         $('.examples').remove();
         $('.table-container .row-fluid:nth-of-type(3)').append("<p><div class = 'btn-group examples'></div>");
@@ -546,11 +545,7 @@ var lineFit = (function() {
         function setupLineControls(){
             $(".selected-degree").removeClass("selected-degree");
             $(".line").addClass("selected-degree");
-//            $(".controls").empty();
-//            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div></div></div>");
-//            $('.examples').remove();
-//            $('.table-container .row-fluid:nth-of-type(3)').append("<p><div class = 'btn-group examples'></div>");
-//            $('.examples').append('<button class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Example Data Sets<span class="caret"></span></button><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li><li class = "dropdown-submenu"><a tabindex="-1" href="#" class = "work">Unemployment Rate</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="work" data-index="0">2008</a></li><li><a tabindex="-1" href="#" class="work" data-index="1">2009</a></li></ul></li></ul>');
+            
             isQuadratic = false; //flag for future methods that are different for lines and parabolas
             
             setupExamples();
@@ -561,43 +556,31 @@ var lineFit = (function() {
             bSlider.slider('option','value',model.get_b());
             $('.b-label').html(round_number(model.get_b(),2));
             $('.a-label').html(round_number(model.get_a(),2));
-
-            
-            //functionality to the buttons
+                
+            if($('.plot-fit').prop("checked")){
+                updateBestFitDisplay(true);
+            }
         }
 
         //controls for when the user wants to plot a horizontal (0 order) line
         function setupZeroDegreeControls(){
             $(".selected-degree").removeClass("selected-degree");
             $(".horizontal-line").addClass("selected-degree");
-//            $(".controls").empty();
-//            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div></div></div>");
-//            $('.examples').remove();
-//            $('.table-container .row-fluid:nth-of-type(3)').append("<p><div class = 'btn-group examples'></div>");
-//            $('.examples').append('<button class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Example Data Sets<span class="caret"></span></button><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li><li class = "dropdown-submenu"><a tabindex="-1" href="#" class = "work">Unemployment Rate</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="work" data-index="0">2008</a></li><li><a tabindex="-1" href="#" class="work" data-index="1">2009</a></li></ul></li></ul>');
+
             isQuadratic = false;
             model.change_a(0);
             updateDisplay();
             
             setupExamples();
-            
-//            bSlider = $(".b-slider").slider({ min: 1.5*yMin, max: 1.5*yMax, step: .01,
-//                slide: function( event, ui ) {
-//                    if ($('.plot-fit').prop('checked')==true){
-//                        $('.plot-fit').attr('checked', false);
-//                    }
-//                    model.change_b(ui.value);
-//                    $('.b-label').html(ui.value);
-//                    updateDisplay();
-//                }
-//            });
 
             bSlider.slider('option','value',model.get_b());
             $('.b-label').html(round_number(model.get_b(),2));
             aSlider.slider( "disable" );
             cSlider.slider( "disable" );
-            //functionality to the buttons
-
+            
+            if($('.plot-fit').prop("checked")){
+                updateBestFitDisplay(true);
+            }
         }
         
         //controls for when the user wants to plot a quadratic
@@ -612,37 +595,18 @@ var lineFit = (function() {
             
             setupExamples()
             
-//            aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
-//                if ($('.plot-fit').prop('checked')==true){
-//                    $('.plot-fit').attr('checked', false);
-//                }
-//                model.change_a(ui.value);
-//                $('.a-label').html(ui.value);
-//                updateDisplay();
-//                } 
-//    
-//            });
-//            bSlider = $(".b-slider").slider({ min: 1.5*yMin, max: 1.5*yMax, step: .01,
-//                slide: function( event, ui ) {
-//                    if ($('.plot-fit').prop('checked')==true){
-//                        $('.plot-fit').attr('checked', false);
-//                    }
-//                    model.change_b(ui.value);
-//                    $('.b-label').html(ui.value);
-//                    updateDisplay();
-//                }
-//            });
             aSlider.slider( "enable" );
             cSlider.slider( "enable" );
-            
             aSlider.slider('option','value',model.get_a());
             bSlider.slider('option','value',model.get_b());
             cSlider.slider('option','value',0);
             $('.b-label').html(round_number(model.get_b(),2));
             $('.a-label').html(round_number(model.get_a(),2));
             $('.c-label').html(round_number(model.get_c(),2));
-
-            //functionality to the buttons
+            
+            if($('.plot-fit').prop("checked")){
+                updateBestFitDisplay(true);
+            }
         }
         
         //sets up the buttons
