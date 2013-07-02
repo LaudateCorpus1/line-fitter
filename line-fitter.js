@@ -673,7 +673,7 @@ var lineFit = (function() {
 
                 else{
                     
-                    $('.table-container').append("<div class='alert' style = 'background:black;color:white;'><button type='button' class='close' data-dismiss='alert'>&times;</button><strong>Enter the # of points</strong></div>");
+                    $('.table-container').append("<div class='alert' style = 'background:turquoise;color:black;'><button type='button' class='close' data-dismiss='alert'>&times;</button><strong>Error: No input received. Please enter the # of points</strong></div>");
                 }
             });
         }
