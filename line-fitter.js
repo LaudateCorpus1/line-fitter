@@ -626,12 +626,20 @@ var lineFit = (function() {
 
                 if (!isValidInput || isNaN(parseFloat($('.x-adder').val())) && isNaN(parseFloat($('.y-adder').val()))){
                     window.alert("Please input real numbers");
+
                 }
                 else{
                     point = [parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val())]
                     model.add_point(point);
+                    if(x > xMax || x < xMin || y > yMax || y < yMin){
+                        var maxs_mins = model.get_maxs_and_mins();
+                        yMax = Math.max(Math.ceil(1.2*maxs_mins.yMax),10);
+                        yMin = Math.min(Math.floor(1.2*maxs_mins.yMin),-10);
+                        xMax = Math.max(Math.ceil(1.2*maxs_mins.xMax),10);
+                        xMin = Math.min(Math.floor(1.2*maxs_mins.xMin),-10);
+                        setupGraph(xMin,xMax,yMin,yMax);
+                    }
                     updateDisplay()
-                    
                 }
             });
             
