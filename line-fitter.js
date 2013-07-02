@@ -613,22 +613,17 @@ var lineFit = (function() {
         //sets up the buttons
 
         function setupButtons(){
-            var isValidInput = true;
+           
             $('.add-point').on("click",function(){
-<<<<<<< HEAD
+                var isValidInput = true;
                 var inputVal = $('.x-adder').val();
                 for (var i = 0; i < inputVal.length; i++) {
-                    if (inputVal[i] == '+'|| '-'||'/'||'*'||'x'||'÷'||'='){
+                    if (inputVal[i] == '+'|| inputVal[i] =='-'||inputVal[i] =='/'||inputVal[i] =='*'||inputVal[i] =='x'||inputVal[i] =='÷'||inputVal[i] =='='){
                         isValidInput = false;
                     }
                 };
-                if (!isValidInput || isNaN(parseFloat($('.x-adder').val())) && isNaN(parseFloat($('.y-adder').val()))){
-                    window.alert("Please input real numbers");
-=======
-                if (isNaN(parseFloat($('.x-adder').val())) || isNaN(parseFloat($('.y-adder').val()))){
-                    //window.alert("Please input real numbers");
+                if (!isValidInput || isNaN(parseFloat($('.x-adder').val())) || isNaN(parseFloat($('.y-adder').val()))){
                     $(".add-point").after('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Sorry!</strong> Please enter real numbers </div>');
->>>>>>> 93b42518b531c0c016748b602dbd7ec4787e8a1f
                 }
                 else{
                     var x = parseFloat($('.x-adder').val());
