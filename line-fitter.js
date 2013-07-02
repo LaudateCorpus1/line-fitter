@@ -482,6 +482,12 @@ var lineFit = (function() {
         
         $(".buttons").append('<span>Degree of Polynomial:</span><div class="btn-group" style="margin-left: 5px"><button class="btn btn-small horizontal-line">0</button><button class="btn btn-small line">1 (Linear)</button><button class="btn btn-small parabola">2 (Quadratic)</button></div>');
         
+        $(".controls").empty();
+        $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span4'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span4'>b:<div class='b-slider'></div><div class='b-label'></div></div><div class='span4'>c:<div class='c-slider'></div><div class='c-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax<sup>2</sup>+bx+c</span></div></div></div></div>");
+        $('.examples').remove();
+        $('.table-container .row-fluid:nth-of-type(3)').append("<p><div class = 'btn-group examples'></div>");
+        $('.examples').append('<button class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Example Data Sets<span class="caret"></span></button><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li><li class = "dropdown-submenu"><a tabindex="-1" href="#" class = "work">Unemployment Rate</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="work" data-index="0">2008</a></li><li><a tabindex="-1" href="#" class="work" data-index="1">2009</a></li></ul></li></ul>');
+        
         var tooltip = d3.select("body").append("div").attr("class","point-error").text("");
         
         $(".horizontal-line").on("click",function(){
@@ -496,126 +502,29 @@ var lineFit = (function() {
         var aSlider,bSlider,cSlider;
         var isQuadratic = false;
         //initialize the display as dealing with just lines
-        setupLineControls();
         
-        setupGraph(-10,10,-10,10);
-        setupTable();
-        displayLine([0,0],false);
-        
-        //controls for when the user wants to plot a first-order line
-        function setupLineControls(){
-            $(".selected-degree").removeClass("selected-degree");
-            $(".line").addClass("selected-degree");
-            $(".controls").empty();
-            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div></div></div>");
-            $('.examples').remove();
-            $('.table-container .row-fluid:nth-of-type(3)').append("<p><div class = 'btn-group examples'></div>");
-            $('.examples').append('<button class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Example Data Sets<span class="caret"></span></button><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li><li class = "dropdown-submenu"><a tabindex="-1" href="#" class = "work">Unemployment Rate</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="work" data-index="0">2008</a></li><li><a tabindex="-1" href="#" class="work" data-index="1">2009</a></li></ul></li></ul>');
-            isQuadratic = false; //flag for future methods that are different for lines and parabolas
-            
-            setupExamples();
-            
-            aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
-                if ($('.plot-fit').prop('checked')==true){
-                    $('.plot-fit').attr('checked', false);
-                }
-                model.change_a(ui.value);
-                $('.a-label').html(ui.value);
-                updateDisplay();
-                } 
-    
-            });
-            bSlider = $(".b-slider").slider({ min: 1.5*yMin, max: 1.5*yMax, step: .01,
-                slide: function( event, ui ) {
-                    if ($('.plot-fit').prop('checked')==true){
-                        $('.plot-fit').attr('checked', false);
-                    }
-                    model.change_b(ui.value);
-                    $('.b-label').html(ui.value);
-                    updateDisplay();
-                },
-            });
-
-            aSlider.slider('option','value',model.get_a());
-            bSlider.slider('option','value',model.get_b());
-            $('.b-label').html(round_number(model.get_b(),2));
-            $('.a-label').html(round_number(model.get_a(),2));
-
-            
-            //functionality to the buttons
-            setupButtons();
-        }
-
-        //controls for when the user wants to plot a horizontal (0 order) line
-        function setupZeroDegreeControls(){
-            $(".selected-degree").removeClass("selected-degree");
-            $(".horizontal-line").addClass("selected-degree");
-            $(".controls").empty();
-            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div></div></div>");
-            $('.examples').remove();
-            $('.table-container .row-fluid:nth-of-type(3)').append("<p><div class = 'btn-group examples'></div>");
-            $('.examples').append('<button class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Example Data Sets<span class="caret"></span></button><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li><li class = "dropdown-submenu"><a tabindex="-1" href="#" class = "work">Unemployment Rate</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="work" data-index="0">2008</a></li><li><a tabindex="-1" href="#" class="work" data-index="1">2009</a></li></ul></li></ul>');
-            isQuadratic = false;
-            model.change_a(0);
+        aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
+            if ($('.plot-fit').prop('checked')==true){
+                $('.plot-fit').attr('checked', false);
+            }
+            model.change_a(ui.value);
+            $('.a-label').html(ui.value);
             updateDisplay();
-            
-            setupExamples();
-            
-            bSlider = $(".b-slider").slider({ min: 1.5*yMin, max: 1.5*yMax, step: .01,
-                slide: function( event, ui ) {
-                    if ($('.plot-fit').prop('checked')==true){
-                        $('.plot-fit').attr('checked', false);
-                    }
-                    model.change_b(ui.value);
-                    $('.b-label').html(ui.value);
-                    updateDisplay();
-                }
-            });
-
-            bSlider.slider('option','value',model.get_b());
-            $('.b-label').html(round_number(model.get_b(),2));
-
-            //functionality to the buttons
-            setupButtons();
-        }
+            } 
         
-        //controls for when the user wants to plot a quadratic
-        function setupQuadraticControls(){
-            $(".selected-degree").removeClass("selected-degree");
-            $(".parabola").addClass("selected-degree");
-            $(".controls").empty();
-            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span4'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span4'>b:<div class='b-slider'></div><div class='b-label'></div></div><div class='span4'>c:<div class='c-slider'></div><div class='c-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax<sup>2</sup>+bx+c</span></div></div></div></div>");
-            $('.examples').remove();
-            $('.table-container .row-fluid:nth-of-type(3)').append("<p><div class = 'btn-group examples'></div>");
-            $('.examples').append('<button class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Example Data Sets<span class="caret"></span></button><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li><li class = "dropdown-submenu"><a tabindex="-1" href="#" class = "work">Unemployment Rate</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="work" data-index="0">2008</a></li><li><a tabindex="-1" href="#" class="work" data-index="1">2009</a></li></ul></li></ul>');
-            isQuadratic = true;
-            model.change_c(model.get_b());
-            model.change_b(model.get_a());
-            model.change_a(0);
-            
-            setupExamples()
-            
-            aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
+        });
+
+        bSlider = $(".b-slider").slider({ min: 1.5*yMin, max: 1.5*yMax, step: .01,
+            slide: function( event, ui ) {
                 if ($('.plot-fit').prop('checked')==true){
                     $('.plot-fit').attr('checked', false);
                 }
-                model.change_a(ui.value);
-                $('.a-label').html(ui.value);
+                model.change_b(ui.value);
+                $('.b-label').html(ui.value);
                 updateDisplay();
-                } 
-    
-            });
-            bSlider = $(".b-slider").slider({ min: 1.5*yMin, max: 1.5*yMax, step: .01,
-                slide: function( event, ui ) {
-                    if ($('.plot-fit').prop('checked')==true){
-                        $('.plot-fit').attr('checked', false);
-                    }
-                    model.change_b(ui.value);
-                    $('.b-label').html(ui.value);
-                    updateDisplay();
-                }
-            });
-            cSlider = $(".c-slider").slider({ min: 1.5*yMin, max: 1.5*yMax, step: .01,
+            },
+        });
+        cSlider = $(".c-slider").slider({ min: 1.5*yMin, max: 1.5*yMax, step: .01,
                 slide: function( event, ui ) {
                     if ($('.plot-fit').prop('checked')==true){
                         $('.plot-fit').attr('checked', false);
@@ -624,7 +533,108 @@ var lineFit = (function() {
                     $('.c-label').html(ui.value);
                     updateDisplay();
                 }
-            });
+        });
+
+        setupLineControls();
+        setupButtons();
+
+        setupGraph(-10,10,-10,10);
+        setupTable();
+        displayLine([0,0],false);
+        
+        //controls for when the user wants to plot a first-order line
+        function setupLineControls(){
+            $(".selected-degree").removeClass("selected-degree");
+            $(".line").addClass("selected-degree");
+//            $(".controls").empty();
+//            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div></div></div>");
+//            $('.examples').remove();
+//            $('.table-container .row-fluid:nth-of-type(3)').append("<p><div class = 'btn-group examples'></div>");
+//            $('.examples').append('<button class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Example Data Sets<span class="caret"></span></button><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li><li class = "dropdown-submenu"><a tabindex="-1" href="#" class = "work">Unemployment Rate</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="work" data-index="0">2008</a></li><li><a tabindex="-1" href="#" class="work" data-index="1">2009</a></li></ul></li></ul>');
+            isQuadratic = false; //flag for future methods that are different for lines and parabolas
+            
+            setupExamples();
+            aSlider.slider( "enable" );
+            cSlider.slider( "disable" );
+
+            aSlider.slider('option','value',model.get_a());
+            bSlider.slider('option','value',model.get_b());
+            $('.b-label').html(round_number(model.get_b(),2));
+            $('.a-label').html(round_number(model.get_a(),2));
+
+            
+            //functionality to the buttons
+        }
+
+        //controls for when the user wants to plot a horizontal (0 order) line
+        function setupZeroDegreeControls(){
+            $(".selected-degree").removeClass("selected-degree");
+            $(".horizontal-line").addClass("selected-degree");
+//            $(".controls").empty();
+//            $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span6'>b:<div class='b-slider'></div><div class='b-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax+b</span></div></div></div></div>");
+//            $('.examples').remove();
+//            $('.table-container .row-fluid:nth-of-type(3)').append("<p><div class = 'btn-group examples'></div>");
+//            $('.examples').append('<button class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Example Data Sets<span class="caret"></span></button><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li><li class = "dropdown-submenu"><a tabindex="-1" href="#" class = "work">Unemployment Rate</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="work" data-index="0">2008</a></li><li><a tabindex="-1" href="#" class="work" data-index="1">2009</a></li></ul></li></ul>');
+            isQuadratic = false;
+            model.change_a(0);
+            updateDisplay();
+            
+            setupExamples();
+            
+//            bSlider = $(".b-slider").slider({ min: 1.5*yMin, max: 1.5*yMax, step: .01,
+//                slide: function( event, ui ) {
+//                    if ($('.plot-fit').prop('checked')==true){
+//                        $('.plot-fit').attr('checked', false);
+//                    }
+//                    model.change_b(ui.value);
+//                    $('.b-label').html(ui.value);
+//                    updateDisplay();
+//                }
+//            });
+
+            bSlider.slider('option','value',model.get_b());
+            $('.b-label').html(round_number(model.get_b(),2));
+            aSlider.slider( "disable" );
+            cSlider.slider( "disable" );
+            //functionality to the buttons
+
+        }
+        
+        //controls for when the user wants to plot a quadratic
+        function setupQuadraticControls(){
+            $(".selected-degree").removeClass("selected-degree");
+            $(".parabola").addClass("selected-degree");
+
+            isQuadratic = true;
+            model.change_c(model.get_b());
+            model.change_b(model.get_a());
+            model.change_a(0);
+            
+            setupExamples()
+            
+//            aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
+//                if ($('.plot-fit').prop('checked')==true){
+//                    $('.plot-fit').attr('checked', false);
+//                }
+//                model.change_a(ui.value);
+//                $('.a-label').html(ui.value);
+//                updateDisplay();
+//                } 
+//    
+//            });
+//            bSlider = $(".b-slider").slider({ min: 1.5*yMin, max: 1.5*yMax, step: .01,
+//                slide: function( event, ui ) {
+//                    if ($('.plot-fit').prop('checked')==true){
+//                        $('.plot-fit').attr('checked', false);
+//                    }
+//                    model.change_b(ui.value);
+//                    $('.b-label').html(ui.value);
+//                    updateDisplay();
+//                }
+//            });
+            aSlider.slider( "enable" );
+            cSlider.slider( "enable" );
+            
             aSlider.slider('option','value',model.get_a());
             bSlider.slider('option','value',model.get_b());
             cSlider.slider('option','value',0);
@@ -633,7 +643,6 @@ var lineFit = (function() {
             $('.c-label').html(round_number(model.get_c(),2));
 
             //functionality to the buttons
-            setupButtons();
         }
         
         //sets up the buttons
@@ -771,7 +780,7 @@ var lineFit = (function() {
                 .attr("cy", function(d){return y_scale(d[1])})
                 .on("mouseover", function(d){
                     point_index = model.getIndexOf(d[0],d[1]);
-                    $('#'+point_index).closest("tr").css("outline","2px solid blue");
+                    $('tr').find('#'+point_index).closest("tr").css("outline","2px solid blue");
                     $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","black");
                     $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","blue").css("stroke-width","3").css("stroke","5,3");
                     if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
@@ -785,7 +794,7 @@ var lineFit = (function() {
                     tooltip.style("top",(d3.event.pageY+10)+"px").style("left",(d3.event.pageX+10)+"px");
                 })
                 .on("mouseout",function(){
-                    $('#'+point_index).closest("tr").css("outline","none");
+                    $('tr').find('#'+point_index).closest("tr").css("outline","none");
                     $('.graphic > .translation > .layer:nth-of-type('+(point_index+1)+')').css("stroke","none");
                     tooltip.style("visibility", "hidden");
                 })
