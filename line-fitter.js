@@ -442,7 +442,30 @@ var lineFit = (function() {
 
         return {add_unemployment_from_file:add_unemployment_from_file, add_point_from_input: add_point_from_input, change_best_fit_line: change_best_fit_line, change_best_fit_line_horizontal: change_best_fit_line_horizontal, change_best_fit_quadratic: change_best_fit_quadratic, add_anscombe_from_file: add_anscombe_from_file};
     }
-    
+    /* View that controls how the content is displayed to the user.
+        contains instance variables:
+        color_scale - a d3 object that converts numbers into colors
+        
+        functions: 
+        setupLineControls
+        setupZeroDegreeControls
+        setupQuadControls
+        displayLine
+        displayQuad
+        updatePointsOnGraph
+        displayErrorInfo
+        removeErrorInfo
+        updateEquation
+        turnErrorDisplayOn
+        turnErrorDisplayOff
+        makeErrorSquaredString
+        setupTable
+        updateTable
+        clearTable
+        graph
+        updateBestFitDisplay
+        updateDisplay
+    */
     function View(div,model,controller) {    
         var color_scale = d3.scale.linear()
                 .domain([0, yMax])
@@ -832,17 +855,6 @@ var lineFit = (function() {
                 .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
                 console.log(dragPoint.attr("id"));
             }
-
-        //returns a string that shows how the error was calculated by color
-        function makeErrorString(color_scale){
-            var points = model.get_point_list();
-            var errorArray = [];
-            for(var i = 0; i<points.length; i++){
-                errorArray.push("<span style='color:" + color_scale(model.findError(points[i])) + ";'>(" + Math.round(model.findError(points[i])*100)/100 + ")</span>");
-            }
-            var errorString = errorArray.join("+");
-            return errorString;
-        }   
         
         //returns a string that shows how the sum of squares error was calculated by color
         function makeErrorSquareString(color_scale){
