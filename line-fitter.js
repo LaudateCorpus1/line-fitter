@@ -472,7 +472,7 @@ var lineFit = (function() {
                 .domain([0, yMax])
                 .range(['#61A72D','#CC0000']);
         
-        div.append("<div class='container-fluid'><div class='row-fluid'><div class='span12 hero-unit'><h2>Linear Regression</h2></div></div><div class='row-fluid'><div class='span12 well'><div class='span8 graph'></div><div class='span4 table-container'></div></div></div>");
+        div.append("<div class='container-fluid'><div class='row-fluid'></div><div class='row-fluid'><div class='span12 well'><div class='span8 graph'></div><div class='span4 table-container'></div></div></div>");
         
         $(".table-container").append("<div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point' type = 'button'>Add Point</button></div><br></br><div class = 'row-fluid'># of points: <input class='point-number'><button class = 'btn btn-small randomize'>Randomize Points</button></div>");
 
