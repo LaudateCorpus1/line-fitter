@@ -639,9 +639,15 @@ var lineFit = (function() {
         //sets up the buttons
         function setupButtons(){
             $('.add-point').on("click",function(){
-                point = [parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val())]
-                model.add_point(point);
-                updateDisplay()
+                if (isNaN(parseFloat($('.x-adder').val())) && isNaN(parseFloat($('.y-adder').val()))){
+                    window.alert("Please input real numbers");
+                }
+                else{
+                    point = [parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val())]
+                    model.add_point(point);
+                    updateDisplay()
+                    
+                }
             });
             
             $('.plot-fit').on("click",function(){
