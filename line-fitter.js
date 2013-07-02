@@ -500,7 +500,7 @@ var lineFit = (function() {
         
         setupGraph(-10,10,-10,10);
         setupTable();
-        displayLine([0,0]);
+        displayLine([0,0],false);
         
         //controls for when the user wants to plot a first-order line
         function setupLineControls(){
@@ -699,32 +699,56 @@ var lineFit = (function() {
         }
 
          //takes coefficients to y=ax+b and displays the corresponding on the graph
-        function displayLine(coefficients){
-            chart.selectAll(".best-fit").data(range(xMin,xMax,0.1)).remove();
-            chart.selectAll(".best-fit").data(coefficients).remove();
-
-            var y1 = coefficients[0]*xMin+coefficients[1];
-            var y2 = coefficients[0]*xMax+coefficients[1];
+        function displayLine(coefficients,animate){
             
-            chart.selectAll(".best-fit").data(coefficients).enter().append("line").attr("class", "best-fit").attr('x1', x_scale(xMin)).attr('x2', x_scale(xMax)).attr('y1', y_scale(y1)).attr('y2',y_scale(y2));
-            
-            updateTable();
-            
-            if(model.get_point_list().length > 0){
+            if(!animate){
+                chart.selectAll(".best-fit").data(range(xMin,xMax,0.1)).remove();
+                chart.selectAll(".best-fit").data(coefficients).remove();
+    
+                var y1 = coefficients[0]*xMin+coefficients[1];
+                var y2 = coefficients[0]*xMax+coefficients[1];
+                
+                chart.selectAll(".best-fit").data(coefficients).enter().append("line").attr("class", "best-fit").attr('x1', x_scale(xMin)).attr('x2', x_scale(xMax)).attr('y1', y_scale(y1)).attr('y2',y_scale(y2));
+                
                 turnErrorDisplayOff()
-                turnErrorDisplayOn();
+                turnErrorDisplayOn(false);
             }
+            else{
+//                chart.selectAll(".best-fit").data(range(xMin,xMax,0.1)).remove();
+//                chart.selectAll(".best-fit").data(coefficients).remove();
+//    
+                var y1 = coefficients[0]*xMin+coefficients[1];
+                var y2 = coefficients[0]*xMax+coefficients[1];
+                
+                chart.selectAll(".best-fit").transition().duration(750).attr('x1', x_scale(xMin)).attr('x2', x_scale(xMax)).attr('y1', y_scale(y1)).attr('y2',y_scale(y2));
+                
+                turnErrorDisplayOn(true);
+            }
+            updateTable();
+
         }
         
         //displays the model's current quadratic to the svg
-        function displayQuad(){
+        function displayQuad(animate){
             var coefficients = model.getQuadCoeffs();
-            chart.selectAll(".best-fit").data(range(xMin,xMax,0.1)).remove();
-            chart.selectAll(".best-fit").data(coefficients).remove();
-//            var y1 = coefficients[0]*xMin+coefficients[1];
-//            var y2 = coefficients[0]*xMax+coefficients[1];
-            
-            chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).enter().append("line").attr("class", "best-fit").attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.2);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.2)*(d+0.2) + coefficients[1]*(d+0.2)+coefficients[2])});
+            //chart.selectAll(".best-fit").data(model.getCoeffs()).remove();
+
+            if(!animate){
+                chart.selectAll(".best-fit").remove();
+                //chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).remove();
+        
+                chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).enter().append("line").attr("class", "best-fit").attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.2);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.2)*(d+0.2) + coefficients[1]*(d+0.2)+coefficients[2])});
+            }
+            else{
+                if(chart.selectAll(".best-fit")[0].length < 3){
+                    console.log(chart.selectAll(".best-fit")[0])
+                    chart.selectAll(".best-fit").remove();
+                    chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).enter().append("line").attr("class", "best-fit").attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.2);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.2)*(d+0.2) + coefficients[1]*(d+0.2)+coefficients[2])});
+                }
+                else{
+                    chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).transition().duration(1000).attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.2);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.2)*(d+0.2) + coefficients[1]*(d+0.2)+coefficients[2])});
+                }
+            }
             
             updateTable();
             
@@ -794,7 +818,7 @@ var lineFit = (function() {
             }
             else{
                 var coefficients = model.getQuadCoeffs();
-                $('.equation').html("y = <span class='a-display' contenteditable = 'true'>"+round_number(coefficients[0],2)+"</span>x<sup>2</sup> + (<span class='b-display' contenteditable = 'true'>" + round_number(coefficients[1],2) + "</span>)x + <span class='c-display' contenteditable = 'true'>"+ round_number(coefficients[2],2))+"</span>";
+                $('.equation').html("y = <span class='a-display' contenteditable = 'true'>"+round_number(coefficients[0],2)+"</span>x<sup>2</sup> + (<span class='b-display' contenteditable = 'true'>" + round_number(coefficients[1],2) + "</span>)x + (<span class='c-display' contenteditable = 'true'>"+ round_number(coefficients[2],2)+"</span>)");
             }
             
             var contentsA = $('.a-display').html();
@@ -843,9 +867,13 @@ var lineFit = (function() {
         }
             
         //adds vertical bars from point to best-fit line (with color scale that displays how much error)
-        function turnErrorDisplayOn(){
-        
-            chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
+        function turnErrorDisplayOn(animate){
+            if(!animate){
+                chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
+            }
+            else{
+                chart.selectAll(".error-line").transition().duration(1000).attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
+            }
             
             displayErrorInfo()
             
@@ -991,19 +1019,19 @@ var lineFit = (function() {
       }
         
         //plots the best fit line or quadratic
-        function updateBestFitDisplay(){
+        function updateBestFitDisplay(animate){
             if($(".line").hasClass("selected-degree")){
                 controller.change_best_fit_line();
                 var coefficients = model.getCoeffs();
                 aSlider.slider("option","value",coefficients[0]);
                 $('.a-label').html(round_number(coefficients[0],2));
-                displayLine(coefficients);
+                displayLine(coefficients,animate);
             }
             
             else if($(".horizontal-line").hasClass("selected-degree")){
                 controller.change_best_fit_line_horizontal();
                 var coefficients = model.getCoeffs();
-                displayLine(coefficients);
+                displayLine(coefficients,animate);
             }
             else{
                 controller.change_best_fit_quadratic();
@@ -1012,7 +1040,7 @@ var lineFit = (function() {
                 $('.a-label').html(round_number(coefficients[0],2));
                 cSlider.slider("option","value",coefficients[2]);
                 $('.c-label').html(round_number(coefficients[2],2));
-                displayQuad(coefficients);
+                displayQuad(animate);
             }
             bSlider.slider("option","value",coefficients[1]);
             $('.b-label').html(round_number(coefficients[1],2));
@@ -1023,17 +1051,17 @@ var lineFit = (function() {
         function updateDisplay(){
             updatePointsOnGraph();
             if($('.plot-fit').prop("checked")){
-                updateBestFitDisplay();
+                updateBestFitDisplay(true);
             }
             else if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
-                displayLine(model.getCoeffs());
+                displayLine(model.getCoeffs(),false);
             }
             else{
-                displayQuad();
+                displayQuad(false);
             }
             turnErrorDisplayOff();
             if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
-                turnErrorDisplayOn();
+                turnErrorDisplayOn(false);
             }
             else{
                 turnQuadErrorDisplayOn();
