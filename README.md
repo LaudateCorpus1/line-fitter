@@ -1,7 +1,7 @@
 Line-Fitter Applet
 ===========
 
-Developed by Laura Breiman <lauracle@mit.edu>  and Samarth Mohan <smohan94@mit.edu>
+Developed by Laura Breiman (<lauracle@mit.edu>) and Samarth Mohan (<smohan94@mit.edu>)
 
 ===========
 
