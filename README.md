@@ -11,8 +11,8 @@ http://htmlpreview.github.com/?https://github.com/laurabreiman/line-fitter/blob/
 
 =======
 
-To insert the applet in your own web page:
+To insert the applet in your own web page, add the following HTML code to your own code:
 
-** insert link here **
+** insert code here **
 
 
