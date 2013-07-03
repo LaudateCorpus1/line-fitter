@@ -613,11 +613,11 @@ var lineFit = (function() {
         //sets up the buttons
 
         function setupButtons(){
+            var isValidInput;
             $('.add-point').on("click",function(){
-                var inputVal = $('.x-adder').val()+$('.y-adder').val();
-                
+                var inputVal = $('.x-adder').val();
                 if (inputVal.indexOf('+') != -1||inputVal.indexOf('-') != -1||inputVal.indexOf('*') != -1||inputVal.indexOf('/') != -1||inputVal.indexOf('=') != -1) {
-                    var isValidInput = false;
+                    isValidInput = false;
                 }
 
                 else{
@@ -625,10 +625,12 @@ var lineFit = (function() {
                 }
 
                 if (!isValidInput || isNaN(parseFloat($('.x-adder').val())) && isNaN(parseFloat($('.y-adder').val()))){
-                    window.alert("Please input real numbers");
-
+                    $(".add-point").after('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Sorry!</strong> Please enter real numbers </div>');
                 }
-                else{
+                else {
+                    var x = parseFloat($('.x-adder').val());
+                    var y = parseFloat($('.y-adder').val());
+                    var point = [x,y]
                     point = [parseFloat($('.x-adder').val()),parseFloat($('.y-adder').val())]
                     model.add_point(point);
                     if(x > xMax || x < xMin || y > yMax || y < yMin){
