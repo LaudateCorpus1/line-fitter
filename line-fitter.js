@@ -660,6 +660,7 @@ var lineFit = (function() {
 
                 if (!isValidInput || isNaN(parseFloat($('.x-adder').val())) && isNaN(parseFloat($('.y-adder').val()))){
                     $(".add-point").after('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Sorry!</strong> Please enter real numbers </div>');
+                    $(".error")[0].play();
                 }
 
                 else {
@@ -695,6 +696,7 @@ var lineFit = (function() {
                 else{
                     
                     $('.table-container').append("<div class='alert' style = 'background:turquoise;color:black;'><button type='button' class='close' data-dismiss='alert'>&times;</button><strong>Error: No input received. Please enter the # of points</strong></div>");
+                    $(".error")[0].play();
                 }
             });
         }
