@@ -552,7 +552,6 @@ var lineFit = (function() {
             setupExamples();
             aSlider.slider( "enable" );
             cSlider.slider( "disable" );
-
             aSlider.slider('option','value',model.get_a());
             bSlider.slider('option','value',model.get_b());
             $('.b-label').html(round_number(model.get_b(),2));
@@ -560,6 +559,10 @@ var lineFit = (function() {
                 
             if($('.plot-fit').prop("checked")){
                 updateBestFitDisplay(true);
+                turnErrorDisplayOn(false);
+            }
+            if(chart !== undefined){
+                updateDisplay();
             }
         }
 
@@ -570,7 +573,6 @@ var lineFit = (function() {
 
             isQuadratic = false;
             model.change_a(0);
-            updateDisplay();
             
             setupExamples();
 
@@ -581,6 +583,10 @@ var lineFit = (function() {
             
             if($('.plot-fit').prop("checked")){
                 updateBestFitDisplay(true);
+                turnErrorDisplayOn(false);
+            }
+            if(chart !== undefined){
+                updateDisplay();
             }
         }
         
@@ -588,7 +594,9 @@ var lineFit = (function() {
         function setupQuadraticControls(){
             $(".selected-degree").removeClass("selected-degree");
             $(".parabola").addClass("selected-degree");
-
+            
+            turnErrorDisplayOff();
+            
             isQuadratic = true;
             model.change_c(model.get_b());
             model.change_b(model.get_a());
@@ -607,13 +615,14 @@ var lineFit = (function() {
             
             if($('.plot-fit').prop("checked")){
                 updateBestFitDisplay(true);
+                turnQuadErrorDisplayOn(false);
             }
+            updateDisplay();
         }
         
         //sets up the buttons
 
         function setupButtons(){
-            var isValidInput;
             $('.add-point').on("click",function(){
                 var inputXVal = $('.x-adder').val();
                 var inputYVal = $('.y-adder').val();
@@ -652,6 +661,7 @@ var lineFit = (function() {
                 if (!isValidInput || isNaN(parseFloat($('.x-adder').val())) && isNaN(parseFloat($('.y-adder').val()))){
                     $(".add-point").after('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Sorry!</strong> Please enter real numbers </div>');
                 }
+
                 else {
                     var x = parseFloat($('.x-adder').val());
                     var y = parseFloat($('.y-adder').val());
@@ -761,6 +771,8 @@ var lineFit = (function() {
                 //chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).remove();
         
                 chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).enter().append("line").attr("class", "best-fit").attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.2);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.2)*(d+0.2) + coefficients[1]*(d+0.2)+coefficients[2])});
+                turnErrorDisplayOff();
+                turnQuadErrorDisplayOn(false);
             }
             else{
                 if(chart.selectAll(".best-fit")[0].length < 3){
@@ -770,14 +782,11 @@ var lineFit = (function() {
                 else{
                     chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).transition().duration(750).attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.2);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.2)*(d+0.2) + coefficients[1]*(d+0.2)+coefficients[2])});
                 }
+                
+                turnQuadErrorDisplayOn(true);
             }
             
             updateTable();
-            
-            if(model.get_point_list().length > 0){
-                turnErrorDisplayOff()
-                turnQuadErrorDisplayOn();
-            }
         }
     
         //plots all the points in the model's pointList to the svg
@@ -880,8 +889,11 @@ var lineFit = (function() {
             $(".squared").popover('disable');
         }
 
-        function clickedButton(){
-            
+        function clicked(){
+            var dragPoint = d3.select(this);
+            dragPoint
+                var sdsa = x_scale2(parseInt(dragPoint.attr("cx")));
+                var odhas = y_scale2(parseInt(dragPoint.attr("cy")));
         }
             
         //adds vertical bars from point to best-fit line (with color scale that displays how much error)
@@ -890,7 +902,7 @@ var lineFit = (function() {
                 chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
             }
             else{
-                chart.selectAll(".error-line").transition().duration(1000).attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
+                chart.selectAll(".error-line").data(model.get_point_list()).transition().duration(1000).attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
             }
             
             displayErrorInfo()
@@ -899,9 +911,14 @@ var lineFit = (function() {
         }
 
         //adds vertical bars from point to the quadratic (color-coded by how far away)
-        function turnQuadErrorDisplayOn(){
-        
-            chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.quadAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findQuadError(d)); });
+
+        function turnQuadErrorDisplayOn(animate){
+            if(!animate){
+                chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.quadAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findQuadError(d)); });
+            }
+           else{
+                chart.selectAll(".error-line").transition().duration(1000).attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.quadAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findQuadError(d)); });
+           }
             
             displayErrorInfo()
             
@@ -935,8 +952,8 @@ var lineFit = (function() {
             var errorArrayOne = [];
             var errorArrayTwo = [];
             for(var i = 0; i<points.length; i++){
-                errorArrayOne.push("<span style='color:" + color_scale(model.findError(points[i])) + ";'>(" + Math.round(model.findError(points[i])*100)/100 + ")<sup>2</sup></span>");
-                errorArrayTwo.push("<span style='color:" + color_scale(model.findError(points[i])) + ";'>(" + Math.round(Math.pow(model.findError(points[i]), 2)*100)/100 + ")</span>");
+                errorArrayOne.push("<span style='color:" + color_scale(model.findError(points[i])) + ";'>(" + round_number(model.findError(points[i]),2) + ")<sup>2</sup></span>");
+                errorArrayTwo.push("<span style='color:" + color_scale(model.findError(points[i])) + ";'>(" + round_number(Math.pow(model.findError(points[i]), 2),2)+ ")</span>");
             }
             var errorStringOne = errorArrayOne.join("+");
             var errorStringTwo = errorArrayTwo.join("+");
@@ -1053,6 +1070,8 @@ var lineFit = (function() {
                 cSlider.slider("option","value",coefficients[2]);
                 $('.c-label').html(round_number(coefficients[2],2));
                 displayQuad(animate);
+                turnErrorDisplayOff();
+                turnQuadErrorDisplayOn(false);
             }
             bSlider.slider("option","value",coefficients[1]);
             $('.b-label').html(round_number(coefficients[1],2));
@@ -1071,7 +1090,7 @@ var lineFit = (function() {
             else{
                 displayQuad(false);
             }
-            turnErrorDisplayOff();
+            //turnErrorDisplayOff();
             if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
                 turnErrorDisplayOn(false);
             }
@@ -1144,9 +1163,9 @@ $(document).ready(function() {
     $('#elem1').popover();
 });
 
-$(window).resize(function(){
-    var bodyheight = $(document).height(); 
-    var bodywidth = $(document).width();
-    $('.line-fit').height(bodyheight);
-    $('.line-fit').width(bodywidth);
-})
+//$(window).resize(function(){
+//    var bodyheight = $(document).height(); 
+//    var bodywidth = $(document).width();
+//    $('.line-fit').height(bodyheight);
+//    $('.line-fit').width(bodywidth);
+//})

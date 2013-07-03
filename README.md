@@ -3,6 +3,7 @@ Line-Fitter Applet
 
 Developed by Laura Breiman (<lauracle@mit.edu>) and Samarth Mohan (<smohan94@mit.edu>)
 Mentor: Fredo Durand (fredopdurand@gmail.com)
+
 ===========
 
 General Description: this applet helps students visualize the process of finding a line of best-fit by interactively minimizing the sum of least squares. For use in the MIT class 6.00 (Introduction to Computer Science and Programming) to understand least-squares algorithms.
@@ -20,6 +21,11 @@ To insert the applet in your own web page, follow these steps:
 1. Clone our GitHub Repository so that you have access to our files. (www.github.com/laurabreiman/line-fitter) 
 
 2. Then, add the following HTML code to the head of your own code, and insert a div with class "line-fit" in the body of your html:
+
+=======
+
+1. Clone this repository so that you have access to all the necessary files and folders. 
+2. Add the following HTML code to the head of your own code, and insert a div with class "line-fit" in the body of your html:
 
         <head>
         <script src ="example-data.js"></script>
