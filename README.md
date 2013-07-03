@@ -3,6 +3,7 @@ Line-Fitter Applet
 
 Developed by Laura Breiman (<lauracle@mit.edu>) and Samarth Mohan (<smohan94@mit.edu>)
 Mentor: Fredo Durand (fredopdurand@gmail.com)
+
 ===========
 
 General Description: this applet helps students visualize the process of finding a line of best-fit by interactively minimizing the sum of least squares. For use in the MIT class 6.00 (Introduction to Computer Science and Programming) to understand least-squares algorithms.
