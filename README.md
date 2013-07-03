@@ -16,8 +16,12 @@ http://htmlpreview.github.com/?https://github.com/laurabreiman/line-fitter/blob/
 
 =======
 
-To insert the applet in your own web page, add the following HTML code to the head of your own code, and insert a div with class "line-fit" in the body of your html (<div class="line-fit"></div>) :
+To insert the applet in your own web page, follow these steps:
 
+1. Clone this repository so that you have access to all the necessary files and folders. 
+2. Add the following HTML code to the head of your own code, and insert a div with class "line-fit" in the body of your html:
+
+        <head>
         <script src ="example-data.js"></script>
         <script src ="work-data.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
@@ -29,3 +33,10 @@ To insert the applet in your own web page, add the following HTML code to the he
         <link href="line-fitter.css" rel="stylesheet">
         <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
         <script src="line-fitter.js"></script>
+        </head>
+        ....
+        ....
+        <body>
+        <div class = "line-fit"></div>
+        ...
+        </body>
