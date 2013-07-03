@@ -1163,9 +1163,9 @@ $(document).ready(function() {
     $('#elem1').popover();
 });
 
-//$(window).resize(function(){
-//    var bodyheight = $(document).height(); 
-//    var bodywidth = $(document).width();
-//    $('.line-fit').height(bodyheight);
-//    $('.line-fit').width(bodywidth);
-//})
+$(window).resize(function(){
+   var bodyheight = $(document).height(); 
+   var bodywidth = $(document).width();
+   $('.line-fit').height(bodyheight);
+   $('.line-fit').width(bodywidth);
+})
