@@ -19,15 +19,14 @@
 <body>
     <audio class = "error" src = "error.mp3"></audio>
         <!-- the navigation bar at the top of the page is created here -->
-        <div class = "navbar navbar">
+        <div class = "navbar navbar-inverse">
             <div class = "navbar-inner">
                 <div class = "container">
-                <a class = "brand" href="#">6.00 Line-Fitting Applet</a>
-                    <ul class = "nav">
-                    <li class = "divider-vertical" style = "margin-left:30px;"><a class = "brand" href="#aboutModal" data-toggle = "modal">About</a></li>
-                    <li class = "divider-vertical"><a class = "brand" id = "elem" rel = "popover" data-placement = "bottom" data-trigger = "hover" data-content = "Access our GitHub Repository" href = "https://github.com/laurabreiman/line-fitter"><i class = "icon-github-sign"></i></a></li>
-                    <li><a class = "brand" id = "elem1" rel = "popover" data-placement = "bottom" data-trigger = "hover" data-content = "Found Bugs? Report to smohan94@mit.edu or lauracle@mit.edu" href = "#"><i class = "icon-bug"></i></a></li>
-                    </ul>
+                <a class = "brand pull-right" href="#">6.00 Line-Fitting Applet</a>
+                <a class = "brand" href="#aboutModal" data-toggle = "modal">About</a></li>
+                <a class = "brand" id = "elem" rel = "popover" data-placement = "bottom" data-trigger = "hover" data-content = "Access our GitHub Repository" href = "https://github.com/laurabreiman/line-fitter"><i class = "icon-github-sign"></i></a></li>
+                <a class = "brand" id = "elem1" rel = "popover" data-placement = "bottom" data-trigger = "hover" data-content = "Found Bugs? Report to smohan94@mit.edu or lauracle@mit.edu" href = "#"><i class = "icon-bug"></i></a>
+               
                 </div>
             </div>
         </div>
@@ -50,7 +49,7 @@
 
     <div class="modal-body">
      <div class = "tab-content">
-        <div class="tab-pane fade in" id="credits"><text style = "font-size:14pt">Our Mentor: Professor Fr&eacute;do Durand<br> Tools Used: D3, jQuery, and Bootstrap</text></div>
+        <div class="tab-pane fade in" id="credits"><text style = "font-size:14pt">Our Mentor: Professor Fr&eacute;do Durand<br> Tools Used: D3, jQuery, jQueryUI, and Bootstrap</text></div>
         <div class ="tab-pane fade in" id = "instructions"><h3>How the Widget works:</h3>
             <text style = "font-size:12pt;font-family:Times;">
                 1. In order to add point values, enter the x and y coordinates in the respective input fields and hit 'Add Point.'
@@ -70,9 +69,11 @@
         </div>
 
         <div class ="tab-pane fade in" id = "help">Help</div>
-        <div class ="tab-pane fade in" id = "embed"><h3>How to use our widget in your own webpage</h3><br><text style = "font-size:10pt;"><strong>If you wish to use the applet as is,  </strong> first clone our GitHub Repository so that you all the necessary files. <br>Afterwards, simply <strong>paste the following HTML Code </strong> into your own code: </text>
+        <div class ="tab-pane fade in" id = "embed"><h3>How to use our widget in your own webpage</h3><br><text style = "font-size:10pt;"><strong>If you wish to use the applet as is,  </strong> first clone our GitHub Repository so that you all the necessary files. <br>Afterwards, simply <strong>include the following HTML Code </strong> into your own code: </text>
             <div class = "embedcode">
                 <pre>
+&lt;head&gt;
+....                 
 &lt;script src ="example-data.js"&gt;&lt;/script&gt;
 &lt;script src ="work-data.js"&gt;&lt;/script&gt;
 &lt;script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"&gt;&lt;/script&gt;
@@ -84,13 +85,18 @@
 &lt;link href="line-fitter.css" rel="stylesheet"&gt;
 &lt;link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" /&gt;
 &lt;script src="line-fitter.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+...
+&lt;body&gt;
+...
 &lt;div class="line-fit"&gt;&lt;/div&gt;
-&lt;script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"&gt;&lt;/script&gt;
+...
+&lt;/&gt;
                     
                 </pre>
             </div>
             <text style = "font-size:12pt">If you want modify the width and height, simply change the width and height accordingly</text>
-            <p><p><code>...class = "line-fitter" style = "width: ; height: ;"</code></p></p>
+            <p><p><code>...class = "line-fitter" style = "width: px; height: px;"</code></p></p>
         </div>
     </div>
 </div>
