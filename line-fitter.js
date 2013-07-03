@@ -615,8 +615,33 @@ var lineFit = (function() {
         function setupButtons(){
             var isValidInput;
             $('.add-point').on("click",function(){
-                var inputVal = $('.x-adder').val();
-                if (inputVal.indexOf('+') != -1||inputVal.indexOf('-') != -1||inputVal.indexOf('*') != -1||inputVal.indexOf('/') != -1||inputVal.indexOf('=') != -1) {
+                var inputXVal = $('.x-adder').val();
+                var inputYVal = $('.y-adder').val();
+                var inputVal = inputXVal + inputYVal;
+                // counts number of minus signs in inputXVal
+                var signCount_x = (inputXVal.match(/-/g)||[]).length;
+                // counts number of minus signs in inputYVal
+                var signCount_y = (inputYVal.match(/-/g)||[]).length;
+                var totalcount = signCount_x+signCount_y;
+                console.log(signCount_x+"...."+signCount_y);
+
+                if ((inputXVal.indexOf('-') == 0 && inputYVal.indexOf('-') == 0) && totalcount == 2){
+                    isValidInput = true;
+                }
+
+                else if ((inputXVal.indexOf('-') == 0 && inputYVal.indexOf('-') == 0) && totalcount>2){
+                    isValidInput = false;
+                }
+
+                else if ((inputXVal.indexOf('-') == 0||inputYVal.indexOf('-') == 0) && totalcount>1){
+                    isValidInput = false;
+                }
+
+                else if (!(inputXVal.indexOf('-') == 0||inputYVal.indexOf('-') == 0) && totalcount>=1){
+                    isValidInput = false;
+                }
+
+                else if (inputVal.indexOf('+') != -1||inputVal.indexOf('*') != -1||inputVal.indexOf('/') != -1||inputVal.indexOf('=') != -1) {
                     isValidInput = false;
                 }
 
@@ -855,11 +880,8 @@ var lineFit = (function() {
             $(".squared").popover('disable');
         }
 
-        function clicked(){
-            var dragPoint = d3.select(this);
-            dragPoint
-                var sdsa = x_scale2(parseInt(dragPoint.attr("cx")));
-                var odhas = y_scale2(parseInt(dragPoint.attr("cy")));
+        function clickedButton(){
+            
         }
             
         //adds vertical bars from point to best-fit line (with color scale that displays how much error)
