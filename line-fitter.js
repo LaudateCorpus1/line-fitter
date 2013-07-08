@@ -475,7 +475,7 @@ var lineFit = (function() {
         
         div.append("<div class='container-fluid'><div class='row-fluid'></div><div class='row-fluid'><div class='span12 well'><div class='span8 graph'></div><div class='span4 table-container'></div></div></div>");
         
-        $(".table-container").append("<div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div><div class='row-fluid'>x: <input class='x-adder'> y: <input class='y-adder'><button class = 'btn btn-small add-point' type = 'button'>Add Point</button></div><br></br><div class = 'row-fluid'># of points: <input class='point-number'><button class = 'btn btn-small randomize'>Randomize Points</button></div>");
+        $(".table-container").append("<div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div><div class='row-fluid'><input class='x-adder' placeholder = 'x'><input class='y-adder' placeholder = 'y' style = 'margin-left:5px;'><button class = 'btn btn-small add-point' type = 'button'>Add Point</button></div><br></br><div class = 'row-fluid'><input class='point-number' placeholder = '# of points' style = 'margin-right:10px; width:30%'><button class = 'btn btn-small randomize'>Randomize Points</button></div>");
 
         $(".graph").append("<div class='row-fluid'><div class='span8 chart-container'></div><div class='span4'><div class='graph-container'></div><div class='info-container'></div></div></div>");
         
@@ -624,10 +624,34 @@ var lineFit = (function() {
 
         function setupButtons(){
             $('.add-point').on("click",function(){
-                var inputVal = $('.x-adder').val()+$('.y-adder').val();
-                
-                if (inputVal.indexOf('+') != -1||inputVal.indexOf('-') != -1||inputVal.indexOf('*') != -1||inputVal.indexOf('/') != -1||inputVal.indexOf('=') != -1) {
-                    var isValidInput = false;
+                var inputXVal = $('.x-adder').val();
+                var inputYVal = $('.y-adder').val();
+                var inputVal = inputXVal + inputYVal;
+                // counts number of minus signs in inputXVal
+                var signCount_x = (inputXVal.match(/-/g)||[]).length;
+                // counts number of minus signs in inputYVal
+                var signCount_y = (inputYVal.match(/-/g)||[]).length;
+                var totalcount = signCount_x+signCount_y;
+                console.log(signCount_x+"...."+signCount_y);
+
+                if ((inputXVal.indexOf('-') == 0 && inputYVal.indexOf('-') == 0) && totalcount == 2){
+                    isValidInput = true;
+                }
+
+                else if ((inputXVal.indexOf('-') == 0 && inputYVal.indexOf('-') == 0) && totalcount>2){
+                    isValidInput = false;
+                }
+
+                else if ((inputXVal.indexOf('-') == 0||inputYVal.indexOf('-') == 0) && totalcount>1){
+                    isValidInput = false;
+                }
+
+                else if (!(inputXVal.indexOf('-') == 0||inputYVal.indexOf('-') == 0) && totalcount>=1){
+                    isValidInput = false;
+                }
+
+                else if (inputVal.indexOf('+') != -1||inputVal.indexOf('*') != -1||inputVal.indexOf('/') != -1||inputVal.indexOf('=') != -1) {
+                    isValidInput = false;
                 }
 
                 else{
@@ -635,7 +659,8 @@ var lineFit = (function() {
                 }
 
                 if (!isValidInput || isNaN(parseFloat($('.x-adder').val())) && isNaN(parseFloat($('.y-adder').val()))){
-                    window.alert("Please input real numbers");
+                    $(".add-point").after('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Sorry!</strong> Please enter real numbers </div>');
+                    $(".error")[0].play();
                 }
 
                 else {
@@ -671,6 +696,7 @@ var lineFit = (function() {
                 else{
                     
                     $('.table-container').append("<div class='alert' style = 'background:turquoise;color:black;'><button type='button' class='close' data-dismiss='alert'>&times;</button><strong>Error: No input received. Please enter the # of points</strong></div>");
+                    $(".error")[0].play();
                 }
             });
         }
@@ -864,13 +890,10 @@ var lineFit = (function() {
             $(".info-container").empty();
             $(".squared").popover('disable');
         }
-
-        function clicked(){
-            var dragPoint = d3.select(this);
-            dragPoint
-                var sdsa = x_scale2(parseInt(dragPoint.attr("cx")));
-                var odhas = y_scale2(parseInt(dragPoint.attr("cy")));
-        }
+        
+        // function clicked(){
+        //     console.log("dsa")
+        // }
             
         //adds vertical bars from point to best-fit line (with color scale that displays how much error)
         function turnErrorDisplayOn(animate){
@@ -906,8 +929,8 @@ var lineFit = (function() {
                     .on("dragend",function(){
                         dict.length = 0;
                         var dragPoint = d3.select(this);
-                        var newX = round_number(x_scale2(parseInt(dragPoint.attr("cx"))),1);
-                        var newY = round_number(y_scale2(parseInt(dragPoint.attr("cy"))),0);
+                        var newX = x_scale2(parseInt(dragPoint.attr("cx")));
+                        var newY = y_scale2(parseInt(dragPoint.attr("cy")));
                  
                         model.replace_point(dragPoint.attr("id"),newX,newY);
                         updateDisplay();
@@ -1139,9 +1162,9 @@ $(document).ready(function() {
     $('#elem1').popover();
 });
 
-//$(window).resize(function(){
-//    var bodyheight = $(document).height(); 
-//    var bodywidth = $(document).width();
-//    $('.line-fit').height(bodyheight);
-//    $('.line-fit').width(bodywidth);
-//})
+$(window).resize(function(){
+   var bodyheight = $(document).height(); 
+   var bodywidth = $(document).width();
+   $('.line-fit').height(bodyheight);
+   $('.line-fit').width(bodywidth);
+})
