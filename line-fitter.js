@@ -419,6 +419,14 @@ var lineFit = (function() {
                 model.add_point(anscombes[number][i]);
             }
         }
+        
+        function add_spring_from_file(){
+            model.clear_points();
+
+            for(var i=0;i<spring.length;i++){
+                model.add_point(spring[i]);
+            }
+        }
 
         function add_unemployment_from_file(number){
             model.clear_points();
@@ -442,7 +450,7 @@ var lineFit = (function() {
             model.change_c(coeffs[2]);
         }
 
-        return {add_unemployment_from_file:add_unemployment_from_file, add_point_from_input: add_point_from_input, change_best_fit_line: change_best_fit_line, change_best_fit_line_horizontal: change_best_fit_line_horizontal, change_best_fit_quadratic: change_best_fit_quadratic, add_anscombe_from_file: add_anscombe_from_file};
+        return {add_unemployment_from_file:add_unemployment_from_file, add_point_from_input: add_point_from_input, add_spring_from_file: add_spring_from_file, change_best_fit_line: change_best_fit_line, change_best_fit_line_horizontal: change_best_fit_line_horizontal, change_best_fit_quadratic: change_best_fit_quadratic, add_anscombe_from_file: add_anscombe_from_file};
     }
     /* View that controls how the content is displayed to the user.
         contains instance variables:
@@ -486,7 +494,7 @@ var lineFit = (function() {
         $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span4'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span4'>b:<div class='b-slider'></div><div class='b-label'></div></div><div class='span4'>c:<div class='c-slider'></div><div class='c-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax<sup>2</sup>+bx+c</span></div></div></div></div>");
         $('.examples').remove();
         $('.table-container .row-fluid:nth-of-type(3)').append("<p><div class = 'btn-group examples'></div>");
-        $('.examples').append('<button class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Example Data Sets<span class="caret"></span></button><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li><li class = "dropdown-submenu"><a tabindex="-1" href="#" class = "work">Unemployment Rate</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="work" data-index="0">2008</a></li><li><a tabindex="-1" href="#" class="work" data-index="1">2009</a></li></ul></li></ul>');
+        $('.examples').append('<button class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Example Data Sets<span class="caret"></span></button><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li><li class = "dropdown-submenu"><a tabindex="-1" href="#" class = "work">Unemployment Rate</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="work" data-index="0">2008</a></li><li><a tabindex="-1" href="#" class="work" data-index="1">2009</a></li></ul></li><li><a tabindex="-1" href="#" class = "spring">Spring</a></li></ul>');
         
         var tooltip = d3.select("body").append("div").attr("class","point-error").text("");
         
@@ -537,6 +545,7 @@ var lineFit = (function() {
 
         setupLineControls();
         setupButtons();
+        setupExamples();
 
         setupGraph(-10,10,-10,10);
         setupTable();
@@ -548,8 +557,7 @@ var lineFit = (function() {
             $(".line").addClass("selected-degree");
             
             isQuadratic = false; //flag for future methods that are different for lines and parabolas
-            
-            setupExamples();
+
             aSlider.slider( "enable" );
             cSlider.slider( "disable" );
             aSlider.slider('option','value',model.get_a());
@@ -573,8 +581,6 @@ var lineFit = (function() {
 
             isQuadratic = false;
             model.change_a(0);
-            
-            setupExamples();
 
             bSlider.slider('option','value',model.get_b());
             $('.b-label').html(round_number(model.get_b(),2));
@@ -601,8 +607,6 @@ var lineFit = (function() {
             model.change_c(model.get_b());
             model.change_b(model.get_a());
             model.change_a(0);
-            
-            setupExamples()
             
             aSlider.slider( "enable" );
             cSlider.slider( "enable" );
@@ -726,6 +730,17 @@ var lineFit = (function() {
                 setupGraph(xMin,xMax,yMin,yMax);
                 updateDisplay();
             })
+            
+            $('.spring').on("click",function(){
+                controller.add_spring_from_file();
+                var maxs_mins = model.get_maxs_and_mins();
+                yMax = Math.ceil(1.2*maxs_mins.yMax);
+                yMin = 0;
+                xMax = Math.ceil(1.2*maxs_mins.xMax);
+                xMin = 0;
+                setupGraph(xMin,xMax,yMin,yMax);
+                updateDisplay();
+            })
         }
 
          //takes coefficients to y=ax+b and displays the corresponding on the graph
@@ -825,7 +840,7 @@ var lineFit = (function() {
                     return point_index;
                 })
                 .style("fill","blue")
-                // .on("click",clicked)
+                .on("mouseup",clicked)
                 .call(move)
                 .attr("r", "4");
         }
@@ -891,9 +906,9 @@ var lineFit = (function() {
             $(".squared").popover('disable');
         }
         
-        // function clicked(){
-        //     console.log("dsa")
-        // }
+        function clicked(){
+             console.log(d3.select(this).attr("id"))
+        }
             
         //adds vertical bars from point to best-fit line (with color scale that displays how much error)
         function turnErrorDisplayOn(animate){
@@ -901,7 +916,7 @@ var lineFit = (function() {
                 chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
             }
             else{
-                chart.selectAll(".error-line").data(model.get_point_list()).transition().duration(1000).attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
+                chart.selectAll(".error-line").data(model.get_point_list()).transition().duration(750).attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
             }
             
             displayErrorInfo()
@@ -916,7 +931,7 @@ var lineFit = (function() {
                 chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.quadAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findQuadError(d)); });
             }
            else{
-                chart.selectAll(".error-line").transition().duration(1000).attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.quadAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findQuadError(d)); });
+                chart.selectAll(".error-line").transition().duration(750).attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.quadAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findQuadError(d)); });
            }
             
             displayErrorInfo()
@@ -967,7 +982,7 @@ var lineFit = (function() {
         
         //initializes a table with headers
         function setupTable(){
-            $('.data-table').append("<thead><tr><th>Observed x</th><th>Observed y</th><th>Predicted y</th><th>Error</th><th>Squared Error</th></tr></thead>");
+            $('.data-table').append("<thead><tr><th></th><th>Observed x</th><th>Observed y</th><th>Predicted y</th><th>Error</th><th>Squared Error</th></tr></thead>");
         }
         
         //adds point data to each row of table
@@ -976,17 +991,17 @@ var lineFit = (function() {
             var points = model.get_point_list();
             for(var i = 0; i<points.length; i++){
                 if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
-                    $('.data-table').append("<tr><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.lineAt(points[i][0]),2)+"</td><td>"+round_number(model.findError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findError(points[i]),2),2)+"</td></tr>");
+                    $('.data-table').append("<tr><td><form><input type = 'checkBox' class = 'selector' checked id='"+i+"'></form></td><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.lineAt(points[i][0]),2)+"</td><td>"+round_number(model.findError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findError(points[i]),2),2)+"</td></tr>");
                 }
                 else{
-                    $('.data-table').append("<tr><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.quadAt(points[i][0]),2)+"</td><td>"+round_number(model.findQuadError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findQuadError(points[i]),2),2)+"</td></tr>");
+                    $('.data-table').append("<tr><input type = 'checkBox' class = 'selector' checked id='"+i+"'><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.quadAt(points[i][0]),2)+"</td><td>"+round_number(model.findQuadError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findQuadError(points[i]),2),2)+"</td></tr>");
                 }
             }
             
             var contentsX = $('.x-display').html();
             $('.x-display').blur(function() {
                 if (contentsX!=$(this).html()){
-                    model.replace_point(parseInt($(this).attr("id")), parseFloat($(this).html()),parseFloat($(this).closest("tr").find("td:nth-of-type(2)").html()));
+                    model.replace_point(parseInt($(this).attr("id")), parseFloat($(this).html()),parseFloat($(this).closest("tr").find("td:nth-of-type(3)").html()));
                     contentsX = $(this).html();
                     updateDisplay();
                 }
@@ -994,16 +1009,16 @@ var lineFit = (function() {
             var contentsY = $('.y-display').html();
             $('.y-display').blur(function() {
                 if (contentsY!=$(this).html()){
-                    model.replace_point(parseInt($(this).attr("id")),parseFloat($(this).closest("tr").find("td:nth-of-type(1)").html()),parseFloat($(this).html()));
+                    model.replace_point(parseInt($(this).attr("id")),parseFloat($(this).closest("tr").find("td:nth-of-type(2)").html()),parseFloat($(this).html()));
                     contentsY = $(this).html();
                     updateDisplay();
                 }
             });
             if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
-                $('.data-table').append("<tr><th>Total:</th><td></td><td></td><td></td><th>"+round_number(model.sumOfSquares(),2)+"</th></tr>");
+                $('.data-table').append("<tr><th>Total:</th><td></td><td></td><td></td><td></td><th>"+round_number(model.sumOfSquares(),2)+"</th></tr>");
             }
             else{
-                $('.data-table').append("<tr><th>Total:</th><td></td><td></td><td></td><th>"+round_number(model.sumOfQuadSquares(),2)+"</th></tr>");
+                $('.data-table').append("<tr><th>Total:</th><td></td><td></td><td></td><td></td><th>"+round_number(model.sumOfQuadSquares(),2)+"</th></tr>");
             }
         }
     
