@@ -990,14 +990,15 @@ var lineFit = (function() {
             clearTable()
             var points = model.get_point_list();
             for(var i = 0; i<points.length; i++){
-                if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
-                    $('.data-table').append("<tr><td><form><input type = 'checkBox' class = 'selector' checked id='"+i+"'></form></td><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.lineAt(points[i][0]),2)+"</td><td>"+round_number(model.findError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findError(points[i]),2),2)+"</td></tr>");
+                if(!isQuadratic){
+                    $('.data-table').append("<tr><td><form><input type = 'checkBox' class = 'selector selector"+i+"' checked></form></td><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.lineAt(points[i][0]),2)+"</td><td>"+round_number(model.findError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findError(points[i]),2),2)+"</td></tr>");
                 }
                 else{
-                    $('.data-table').append("<tr><input type = 'checkBox' class = 'selector' checked id='"+i+"'><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.quadAt(points[i][0]),2)+"</td><td>"+round_number(model.findQuadError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findQuadError(points[i]),2),2)+"</td></tr>");
+                    $('.data-table').append("<tr><td><form><input type = 'checkBox' class = 'selector selector"+i+"' checked></form></td><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.quadAt(points[i][0]),2)+"</td><td>"+round_number(model.findQuadError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findQuadError(points[i]),2),2)+"</td></tr>");
                 }
             }
             
+            //change things when the x or y coordinate of any point on the table is updated
             var contentsX = $('.x-display').html();
             $('.x-display').blur(function() {
                 if (contentsX!=$(this).html()){
@@ -1014,7 +1015,13 @@ var lineFit = (function() {
                     updateDisplay();
                 }
             });
-            if($('.line').hasClass("selected-degree") || $('.horizontal-line').hasClass("selected-degree")){
+            
+            $(".selector").on("click",function(){
+                //controller.change_point_visibility($(this).attr("id"));
+                updateDisplay();
+            });
+            
+            if(!isQuadratic){
                 $('.data-table').append("<tr><th>Total:</th><td></td><td></td><td></td><td></td><th>"+round_number(model.sumOfSquares(),2)+"</th></tr>");
             }
             else{
