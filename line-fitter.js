@@ -940,25 +940,36 @@ var lineFit = (function() {
         }
 
         var move =  d3.behavior.drag()
-                    .on("drag",drag)
-                    .on("dragend",function(){
-                        dict.length = 0;
-                        var dragPoint = d3.select(this);
-                        var newX = x_scale2(parseInt(dragPoint.attr("cx")));
-                        var newY = y_scale2(parseInt(dragPoint.attr("cy")));
-                 
-                        model.replace_point(dragPoint.attr("id"),newX,newY);
-                        updateDisplay();
+                        .on("drag",drag)
+                        // .on("dragend",function(){
+                        //     dict.length = 0;
+                        //     var dragPoint = d3.select(this);
+                        //     var newX = x_scale2(parseInt(dragPoint.attr("cx")));
+                        //     var newY = y_scale2(parseInt(dragPoint.attr("cy")));
+                     
+                        //     model.replace_point(dragPoint.attr("id"),newX,newY);
+                        //     updateDisplay();
+                            
                         
-                    
-                });
+                    // });
+        
+                function drag(){
+                    var dragPoint = d3.select(this);
+                    dragPoint
+                    .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
+                    .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
+                    var newX = x_scale2(parseInt(dragPoint.attr("cx")));
+                    var newY = y_scale2(parseInt(dragPoint.attr("cy")));
+                    model.replace_point(dragPoint.attr("id"), newX, newY);
+                    updateDisplay();
+                } 
 
-            function drag(){
-                var dragPoint = d3.select(this);
-                dragPoint
-                .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
-                .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
-            }
+//            function drag(){
+//                var dragPoint = d3.select(this);
+//                dragPoint
+//                .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
+//                .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
+//            }
         
         //returns a string that shows how the sum of squares error was calculated by color
         function makeErrorSquareString(color_scale){
