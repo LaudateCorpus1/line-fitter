@@ -86,11 +86,13 @@ var lineFit = (function() {
     */
     function Model() {
         var pointList = []; //array of [x,y] arrays
+        var visibility = []; //array of booleans signaling if each index of the pointList is visible
         var currentCoeffs = [0,0]; //[a,b] where a and b are from y = ax + b
         var currentQuadCoeffs = [0,0,0]; //[a,b,c] from y = ax^2+bx+c
         
         function add_point(point){ // add a point
             pointList.push([point[0],point[1]]);
+            visibility.push(true);
         }
 
         function replace_point(index,x,y){
@@ -100,6 +102,17 @@ var lineFit = (function() {
         
         function clear_points(){
             pointList = [];
+            visibility = [];
+        }
+        
+        function get_visible_points(){
+            var visibles = [];
+            for(var i=0; i<pointList.length; i++){
+                if(visibility[i]){
+                    visibles.push(pointList[i]);
+                }
+            }
+            return visibles;
         }
         
         function getIndexOf(x,y){
@@ -147,12 +160,14 @@ var lineFit = (function() {
         
         function randomize_points(number){
             pointList = [];
+            visibility = [];
             yMin = -10;
             yMax = 10;
             xMax = 10;
             xMin = -10;
             for(var i=0; i<number; i++){
                 pointList.push(make_random_point());
+                visibility.push(true);
             }
             return pointList;
         }
@@ -197,7 +212,9 @@ var lineFit = (function() {
         function sumOfSquares(){
             var sumOfSquareError = 0;
             for(var i=0; i<pointList.length; i++){
-                sumOfSquareError += Math.pow(findError(pointList[i]),2);
+                if(visibility[i] == true){
+                    sumOfSquareError += Math.pow(findError(pointList[i]),2);
+                }
             }
             return sumOfSquareError;
         }
@@ -206,7 +223,9 @@ var lineFit = (function() {
         function sumOfQuadSquares(){
             var sumOfSquareError = 0;
             for(var i=0; i<pointList.length; i++){
-                sumOfSquareError += Math.pow(findQuadError(pointList[i]),2);
+                if(visibility[i] == true){
+                    sumOfSquareError += Math.pow(findQuadError(pointList[i]),2);
+                }
             }
             return sumOfSquareError;
         }
@@ -216,12 +235,16 @@ var lineFit = (function() {
             var new_list = [];
             if(!isQuadratic){
                 for(var i=0; i<pointList.length; i++){
-                    new_list.push([{y: Math.pow(findError(pointList[i]),2)}])
+                    if(visibility[i] == true){
+                        new_list.push([{y: Math.pow(findError(pointList[i]),2)}])
+                    }
                 }
             }
             else{
                 for(var i=0; i<pointList.length; i++){
-                    new_list.push([{y: Math.pow(findQuadError(pointList[i]),2)}])
+                    if(visibility[i] == true){
+                        new_list.push([{y: Math.pow(findQuadError(pointList[i]),2)}])
+                    }
                 }
             }
             return new_list;
@@ -247,18 +270,34 @@ var lineFit = (function() {
         function bestFit(){
             var lineCoeffs; //coefficients of y=ax+b in the form [a,b]
             if(pointList.length <2){
-                lineCoeffs = [0,0];
+                if(visibility[0] == true){
+                    lineCoeffs = [0,pointList[0][1]];
+                }
+                else{
+                    lineCoeffs = [0,0];
+                }
             }
             else if(pointList.length ==2){
-                var x1 = pointList[0][0];
-                var x2 = pointList[1][0];
-                var y1 = pointList[0][1];
-                var y2 = pointList[1][1];
-                
-                var a = (y2-y1)/(x2-x1);
-                var b = y1 - a*x1;
-                
-                lineCoeffs = [a,b];
+                if(visibility[0] == true && visibility[1] == true){
+                    var x1 = pointList[0][0];
+                    var x2 = pointList[1][0];
+                    var y1 = pointList[0][1];
+                    var y2 = pointList[1][1];
+                    
+                    var a = (y2-y1)/(x2-x1);
+                    var b = y1 - a*x1;
+                    
+                    lineCoeffs = [a,b];
+                }
+                else if(visibility[0] == true){
+                    lineCoeffs = [0,pointList[0][1]];
+                }
+                else if(visibility[1] == true){
+                    lineCoeffs = [0,pointList[1][1]];
+                }
+                else{
+                    lineCoeffs = [0,0];
+                }
             }
             else{
                 lineCoeffs = linear_regression();
@@ -272,7 +311,9 @@ var lineFit = (function() {
             var averageY = 0;
             var n = pointList.length;
             for(var i = 0; i<n ; i++){
-                averageY += pointList[i][1]/n
+                if(visibility[i]){
+                    averageY += pointList[i][1]/n
+                }
             }
             return [0,averageY];
         }
@@ -280,10 +321,10 @@ var lineFit = (function() {
         //returns the best fit quadratic
         function bestFitQuadratic(){
             var lineCoeffs; //coefficients of y=ax^2+bx+c in the form [a,b,c]
-            if(pointList.length <2){
+            if(get_visible_points()<2){
                 lineCoeffs = [0,0,0];
             }
-            else if(pointList.length ==2){
+            else if(get_visible_points() ==2){
                 var x1 = pointList[0][0];
                 var x2 = pointList[1][0];
                 var y1 = pointList[0][1];
@@ -312,13 +353,15 @@ var lineFit = (function() {
             for(i=0;i<pointList.length;i++)
             {   
                 // this is our data pair
-                x = pointList[i][0]; y = pointList[i][1]; 
-        
-                sumx += x;
-                sumx2 += (x*x);
-                sumy += y;
-                sumy2 += (y*y);
-                sumxy += (x*y);
+                if(visibility[i] == true){
+                    x = pointList[i][0]; y = pointList[i][1]; 
+            
+                    sumx += x;
+                    sumx2 += (x*x);
+                    sumy += y;
+                    sumy2 += (y*y);
+                    sumxy += (x*y);
+                }
             }
         
             // note: the denominator is the variance of the random variable X
@@ -339,15 +382,17 @@ var lineFit = (function() {
             for(i=0;i<pointList.length;i++)
             {   
                 // this is our data pair
-                x = pointList[i][0]; y = pointList[i][1]; 
-        
-                sumx += x;
-                sumx2 += (x*x);
-                sumy += y;
-                sumxy += (x*y);
-                sumx3 += (x*x*x);
-                sumx4 += (x*x*x*x);
-                sumx2y += (x*x)*y;
+                if(visibility[i] == true){
+                    x = pointList[i][0]; y = pointList[i][1]; 
+            
+                    sumx += x;
+                    sumx2 += (x*x);
+                    sumy += y;
+                    sumxy += (x*y);
+                    sumx3 += (x*x*x);
+                    sumx4 += (x*x*x*x);
+                    sumx2y += (x*x)*y;
+                }
             }
             
             c = -(sumx*sumx3*sumx2y -sumx*sumxy*sumx4 -sumx2y*sumx2*sumx2 + sumx2*sumy*sumx4 + sumx2*sumx3*sumxy -sumy*sumx3*sumx3)/(-count*sumx2*sumx4 +count*sumx3*sumx3 + sumx*sumx*sumx4-2*sumx*sumx2*sumx3+sumx2*sumx2*sumx2)
@@ -403,8 +448,19 @@ var lineFit = (function() {
             return {xMax: x_max, xMin: x_min, yMax: y_max, yMin: y_min};
         }
         
-        return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, 
-            change_a: change_a, get_a: get_a, get_c: get_c, change_b: change_b, get_b: get_b, change_c: change_c, findError: findError, lineAt: lineAt, quadAt: quadAt, bestFit: bestFit, linear_regression: linear_regression, quadratic_regression: quadratic_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point,clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins, bestFitHorizontal: bestFitHorizontal, getQuadCoeffs: getQuadCoeffs, findQuadError: findQuadError, sumOfQuadSquares: sumOfQuadSquares, bestFitQuadratic: bestFitQuadratic};
+        function get_visibilities(){
+            return visibility;
+        }
+        
+        function hide_point(index){
+            visibility[index] = false;
+        }
+        
+        function show_point(index){
+            visibility[index] = true;
+        }
+        
+        return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, change_a: change_a, get_a: get_a, get_c: get_c, change_b: change_b, get_b: get_b, change_c: change_c, findError: findError, lineAt: lineAt, quadAt: quadAt, bestFit: bestFit, linear_regression: linear_regression, quadratic_regression: quadratic_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point,clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins, bestFitHorizontal: bestFitHorizontal, getQuadCoeffs: getQuadCoeffs, findQuadError: findQuadError, sumOfQuadSquares: sumOfQuadSquares, bestFitQuadratic: bestFitQuadratic, get_visibilities: get_visibilities, hide_point: hide_point, show_point: show_point, get_visible_points: get_visible_points};
    }
     
     function Controller(model) {
@@ -875,7 +931,8 @@ var lineFit = (function() {
         //plots all the points in the model's pointList to the svg
         function updatePointsOnGraph(){
             chart.selectAll(".datapoint").remove();
-            var points = model.get_point_list()
+            var points = model.get_point_list();
+            var visibility = model.get_visibilities();
             var point_index;
             chart.selectAll(".datapoint").data(points).enter().append("circle")
                 .attr("class", "datapoint")
@@ -905,7 +962,7 @@ var lineFit = (function() {
                     point_index = model.getIndexOf(d[0],d[1]);
                     return point_index;
                 })
-                .style("fill","blue")
+                .style("fill",function(d,i){if(visibility[i] == true){ return "blue"} else{ return "lightblue"}})
                 .on("mouseup",clicked)
                 .call(move)
                 .attr("r", "4");
@@ -979,10 +1036,10 @@ var lineFit = (function() {
         //adds vertical bars from point to best-fit line (with color scale that displays how much error)
         function turnErrorDisplayOn(animate){
             if(!animate){
-                chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
+                chart.selectAll(".error-line").data(model.get_visible_points()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
             }
             else{
-                chart.selectAll(".error-line").data(model.get_point_list()).transition().duration(750).attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
+                chart.selectAll(".error-line").data(model.get_visible_points()).transition().duration(750).attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.lineAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findError(d)); });
             }
             
             displayErrorInfo()
@@ -994,7 +1051,7 @@ var lineFit = (function() {
 
         function turnQuadErrorDisplayOn(animate){
             if(!animate){
-                chart.selectAll(".error-line").data(model.get_point_list()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.quadAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findQuadError(d)); });
+                chart.selectAll(".error-line").data(model.get_visible_points()).enter().append("line").attr("class", "error-line").attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.quadAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findQuadError(d)); });
             }
            else{
                 chart.selectAll(".error-line").transition().duration(750).attr('x1', function(d){return x_scale(d[0])}).attr('x2', function(d){ return x_scale(d[0])}).attr('y1', function(d){ return y_scale(d[1])}).attr('y2',function(d){ return y_scale(model.quadAt(d[0]))}).style("stroke", function(d) {return color_scale(model.findQuadError(d)); });
@@ -1066,12 +1123,16 @@ var lineFit = (function() {
         function updateTable(){
             clearTable()
             var points = model.get_point_list();
+            var visibility = model.get_visibilities();
             for(var i = 0; i<points.length; i++){
                 if(!isQuadratic){
-                    $('.data-table').append("<tr><td><form><input type = 'checkBox' class = 'selector selector"+i+"' checked></form></td><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.lineAt(points[i][0]),2)+"</td><td>"+round_number(model.findError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findError(points[i]),2),2)+"</td></tr>");
+                    $('.data-table').append("<tr><td><form><input type = 'checkBox' class = 'selector selector"+i+"' id='"+i+"'></form></td><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.lineAt(points[i][0]),2)+"</td><td>"+round_number(model.findError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findError(points[i]),2),2)+"</td></tr>");
                 }
                 else{
-                    $('.data-table').append("<tr><td><form><input type = 'checkBox' class = 'selector selector"+i+"' checked></form></td><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.quadAt(points[i][0]),2)+"</td><td>"+round_number(model.findQuadError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findQuadError(points[i]),2),2)+"</td></tr>");
+                    $('.data-table').append("<tr><td><form><input type = 'checkBox' class = 'selector selector"+i+"' id='"+i+"'></form></td><td contenteditable class='x-display' id='"+i+"'>"+round_number(points[i][0],2)+"</td><td contenteditable class='y-display' id='"+i+"'>"+round_number(points[i][1],2)+"</td><td>"+round_number(model.quadAt(points[i][0]),2)+"</td><td>"+round_number(model.findQuadError(points[i]),2)+"</td><td>"+round_number(Math.pow(model.findQuadError(points[i]),2),2)+"</td></tr>");
+                }
+                if(visibility[i] == true){
+                    $(".selector"+i).prop("checked",true);
                 }
             }
             
@@ -1095,6 +1156,12 @@ var lineFit = (function() {
             
             $(".selector").on("click",function(){
                 //controller.change_point_visibility($(this).attr("id"));
+                if($(this).prop("checked") == false){
+                    model.hide_point($(this).attr("id"));
+                }
+                else{
+                    model.show_point($(this).attr("id"));
+                }
                 updateDisplay();
             });
             
