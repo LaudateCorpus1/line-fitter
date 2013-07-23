@@ -491,7 +491,7 @@ var lineFit = (function() {
         
         $(".buttons").append('<span>Degree of Polynomial:</span><div class="btn-group" style="margin-left: 5px"><button class="btn btn-small horizontal-line">0</button><button class="btn btn-small line">1 (Linear)</button><button class="btn btn-small parabola">2 (Quadratic)</button></div>');
         
-        $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span4'>a:<div class='a-slider'></div><div class='a-label'></div></div><div class='span4'>b:<div class='b-slider'></div><div class='b-label'></div></div><div class='span4'>c:<div class='c-slider'></div><div class='c-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax<sup>2</sup>+bx+c</span></div></div></div></div>");
+        $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span4'><span class='a-header'>a:</span><div class='a-slider'></div><div class='a-label'></div></div><div class='span4'><span class='b-header'>b:</span><div class='b-slider'></div><div class='b-label'></div></div><div class='span4'><span class='c-header'>c:</span><div class='c-slider'></div><div class='c-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax<sup>2</sup>+bx+c</span></div></div></div></div>");
         $('.examples').remove();
         $('.table-container .row-fluid:nth-of-type(3)').append("<p><div class = 'btn-group examples'></div>");
         $('.examples').append('<button class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Example Data Sets<span class="caret"></span></button><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li><li class = "dropdown-submenu"><a tabindex="-1" href="#" class = "work">Unemployment Rate</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="work" data-index="0">2008</a></li><li><a tabindex="-1" href="#" class="work" data-index="1">2009</a></li></ul></li><li><a tabindex="-1" href="#" class = "spring">Spring</a></li></ul>');
@@ -557,9 +557,30 @@ var lineFit = (function() {
             $(".line").addClass("selected-degree");
             
             isQuadratic = false; //flag for future methods that are different for lines and parabolas
-
-            aSlider.slider( "enable" );
-            cSlider.slider( "disable" );
+            
+            $('.a-header').show();
+            $('.a-label').show();
+            aSlider.css("width", "80%");
+            aSlider.show();//.slider( "enable" );
+            $('.b-header').show();
+            $('.b-label').show();
+            bSlider.css("width", "80%");            
+            bSlider.show();
+            $('.c-label').hide();
+            $('.c-header').hide();
+            cSlider.hide();//.slider( "disable" );
+            
+            aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
+                if ($('.plot-fit').prop('checked')==true){
+                    $('.plot-fit').attr('checked', false);
+                }
+                model.change_a(ui.value);
+                $('.a-label').html(ui.value);
+                updateDisplay();
+                } 
+        
+            });
+            
             aSlider.slider('option','value',model.get_a());
             bSlider.slider('option','value',model.get_b());
             $('.b-label').html(round_number(model.get_b(),2));
@@ -581,11 +602,32 @@ var lineFit = (function() {
 
             isQuadratic = false;
             model.change_a(0);
+            
+            $('.a-header').show();
+            $('.a-label').show();
+            aSlider.show();//.slider( "enable" );
+            aSlider.css("width", "100%");
+            $('.b-header').hide();
+            $('.b-label').hide();
+            bSlider.hide();
+            //bSlider.css("width", "100%");
+            $('.c-label').hide();
+            $('.c-header').hide();
+            cSlider.hide();//.slider( "disable" );
+            
+            aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
+                if ($('.plot-fit').prop('checked')==true){
+                    $('.plot-fit').attr('checked', false);
+                }
+                model.change_b(ui.value);
+                $('.a-label').html(ui.value);
+                updateDisplay();
+                } 
+        
+            });
 
-            bSlider.slider('option','value',model.get_b());
-            $('.b-label').html(round_number(model.get_b(),2));
-            aSlider.slider( "disable" );
-            cSlider.slider( "disable" );
+            aSlider.slider('option','value',model.get_b());
+            $('.a-label').html(round_number(model.get_b(),2));
             
             if($('.plot-fit').prop("checked")){
                 updateBestFitDisplay(true);
@@ -608,8 +650,30 @@ var lineFit = (function() {
             model.change_b(model.get_a());
             model.change_a(0);
             
-            aSlider.slider( "enable" );
-            cSlider.slider( "enable" );
+            $('.a-header').show();
+            $('.a-label').show();
+            aSlider.css("width", "60%");
+            aSlider.show();//.slider( "enable" );
+            $('.b-header').show();
+            $('.b-label').show();
+            bSlider.css("width", "60%");            
+            bSlider.show();
+            $('.c-header').show();
+            $('.c-label').show();
+            cSlider.css("width", "60%");
+            cSlider.show();//.slider( "disable" );
+            
+            aSlider = $(".a-slider").slider({ min: -10, max: 10, step: .01, slide: function( event, ui ) {
+                if ($('.plot-fit').prop('checked')==true){
+                    $('.plot-fit').attr('checked', false);
+                }
+                model.change_a(ui.value);
+                $('.a-label').html(ui.value);
+                updateDisplay();
+                } 
+        
+            });
+            
             aSlider.slider('option','value',model.get_a());
             bSlider.slider('option','value',model.get_b());
             cSlider.slider('option','value',0);
@@ -625,7 +689,6 @@ var lineFit = (function() {
         }
         
         //sets up the buttons
-
         function setupButtons(){
             $('.add-point').on("click",function(){
                 var inputXVal = $('.x-adder').val();
@@ -1086,12 +1149,16 @@ var lineFit = (function() {
                 var coefficients = model.getCoeffs();
                 aSlider.slider("option","value",coefficients[0]);
                 $('.a-label').html(round_number(coefficients[0],2));
+                bSlider.slider("option","value",coefficients[1]);
+                $('.b-label').html(round_number(coefficients[1],2));
                 displayLine(coefficients,animate);
             }
             
             else if($(".horizontal-line").hasClass("selected-degree")){
                 controller.change_best_fit_line_horizontal();
                 var coefficients = model.getCoeffs();
+                aSlider.slider("option","value",coefficients[1]);
+                $('.a-label').html(round_number(coefficients[1],2));
                 displayLine(coefficients,animate);
             }
             else{
@@ -1099,14 +1166,14 @@ var lineFit = (function() {
                 var coefficients = model.getQuadCoeffs();
                 aSlider.slider("option","value",coefficients[0]);
                 $('.a-label').html(round_number(coefficients[0],2));
+                bSlider.slider("option","value",coefficients[1]);
+                $('.b-label').html(round_number(coefficients[1],2));
                 cSlider.slider("option","value",coefficients[2]);
                 $('.c-label').html(round_number(coefficients[2],2));
                 displayQuad(animate);
                 turnErrorDisplayOff();
                 turnQuadErrorDisplayOn(false);
             }
-            bSlider.slider("option","value",coefficients[1]);
-            $('.b-label').html(round_number(coefficients[1],2));
             updateEquation();
         }
 
