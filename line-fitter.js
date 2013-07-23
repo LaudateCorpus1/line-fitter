@@ -797,10 +797,12 @@ var lineFit = (function() {
             $('.spring').on("click",function(){
                 controller.add_spring_from_file();
                 var maxs_mins = model.get_maxs_and_mins();
-                yMax = Math.ceil(1.2*maxs_mins.yMax);
+                console.log(maxs_mins);
+                yMax = 1.2*maxs_mins.yMax;
                 yMin = 0;
-                xMax = Math.ceil(1.2*maxs_mins.xMax);
+                xMax = 1.2*maxs_mins.xMax;
                 xMin = 0;
+                console.log(yMax,xMax);
                 setupGraph(xMin,xMax,yMin,yMax);
                 updateDisplay();
             })
@@ -845,22 +847,23 @@ var lineFit = (function() {
         function displayQuad(animate){
             var coefficients = model.getQuadCoeffs();
             //chart.selectAll(".best-fit").data(model.getCoeffs()).remove();
-
+            var stepsize = (xMax - xMin)/100;
+            
             if(!animate){
                 chart.selectAll(".best-fit").remove();
                 //chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).remove();
-        
-                chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).enter().append("line").attr("class", "best-fit").attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.2);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.2)*(d+0.2) + coefficients[1]*(d+0.2)+coefficients[2])});
+                
+                chart.selectAll(".best-fit").data(range(xMin,xMax,stepsize)).enter().append("line").attr("class", "best-fit").attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+stepsize);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+stepsize)*(d+stepsize) + coefficients[1]*(d+stepsize)+coefficients[2])});
                 turnErrorDisplayOff();
                 turnQuadErrorDisplayOn(false);
             }
             else{
                 if(chart.selectAll(".best-fit")[0].length < 3){
                     chart.selectAll(".best-fit").remove();
-                    chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).enter().append("line").attr("class", "best-fit").attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.2);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.2)*(d+0.2) + coefficients[1]*(d+0.2)+coefficients[2])});
+                    chart.selectAll(".best-fit").data(range(xMin,xMax,stepsize)).enter().append("line").attr("class", "best-fit").attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+stepsize);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+stepsize)*(d+stepsize) + coefficients[1]*(d+stepsize)+coefficients[2])});
                 }
                 else{
-                    chart.selectAll(".best-fit").data(range(xMin,xMax,0.2)).transition().duration(750).attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+0.2);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+0.2)*(d+0.2) + coefficients[1]*(d+0.2)+coefficients[2])});
+                    chart.selectAll(".best-fit").data(range(xMin,xMax,stepsize)).transition().duration(750).attr('x1', function(d){return x_scale(d);}).attr('x2', function(d){return x_scale(d+stepsize);}).attr('y1', function(d){return y_scale(coefficients[0]*d*d+coefficients[1]*d+coefficients[2])}).attr('y2',function(d){return y_scale(coefficients[0]*(d+stepsize)*(d+stepsize) + coefficients[1]*(d+stepsize)+coefficients[2])});
                 }
                 
                 turnQuadErrorDisplayOn(true);
