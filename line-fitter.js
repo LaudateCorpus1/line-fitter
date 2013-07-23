@@ -755,7 +755,6 @@ var lineFit = (function() {
                 // counts number of minus signs in inputYVal
                 var signCount_y = (inputYVal.match(/-/g)||[]).length;
                 var totalcount = signCount_x+signCount_y;
-                console.log(signCount_x+"...."+signCount_y);
 
                 if ((inputXVal.indexOf('-') == 0 && inputYVal.indexOf('-') == 0) && totalcount == 2){
                     isValidInput = true;
@@ -853,12 +852,10 @@ var lineFit = (function() {
             $('.spring').on("click",function(){
                 controller.add_spring_from_file();
                 var maxs_mins = model.get_maxs_and_mins();
-                console.log(maxs_mins);
                 yMax = 1.2*maxs_mins.yMax;
                 yMin = 0;
                 xMax = 1.2*maxs_mins.xMax;
                 xMin = 0;
-                console.log(yMax,xMax);
                 setupGraph(xMin,xMax,yMin,yMax);
                 updateDisplay();
             })
@@ -934,6 +931,7 @@ var lineFit = (function() {
             var points = model.get_point_list();
             var visibility = model.get_visibilities();
             var point_index;
+            var isDragging;
             chart.selectAll(".datapoint").data(points).enter().append("circle")
                 .attr("class", "datapoint")
                 .attr("cx", function(d){return x_scale(d[0])})
@@ -963,7 +961,22 @@ var lineFit = (function() {
                     return point_index;
                 })
                 .style("fill",function(d,i){if(visibility[i] == true){ return "blue"} else{ return "lightblue"}})
-                .on("mouseup",clicked)
+//                .on("mouseup",clicked)
+                .on("mousedown",function() {
+                    $(window).on("mousemove",function() {
+                        isDragging = true;
+                        $(window).off("mousemove");
+                    });
+                })
+                .on("mouseup", function() {
+                    var wasDragging = isDragging;
+                    isDragging = false;
+                    $(window).off("mousemove");
+                    console.log(wasDragging);
+                    if (!wasDragging) { //was clicking
+                        clicked($(this).attr("id"));
+                    }
+                })
                 .call(move)
                 .attr("r", "4");
         }
@@ -1029,8 +1042,8 @@ var lineFit = (function() {
             $(".squared").popover('disable');
         }
         
-        function clicked(){
-             console.log(d3.select(this).attr("id"))
+        function clicked(pointindex){
+            $('.selector'+pointindex).click();
         }
             
         //adds vertical bars from point to best-fit line (with color scale that displays how much error)
@@ -1110,7 +1123,7 @@ var lineFit = (function() {
         
         //removes vertical bars from point to best-fit line
         function turnErrorDisplayOff(){
-            chart.selectAll(".error-line").data(model.get_point_list()).remove();
+            chart.selectAll(".error-line").remove();
             removeErrorInfo()
         }
         
