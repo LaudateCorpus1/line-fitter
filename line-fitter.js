@@ -451,7 +451,7 @@ var lineFit = (function() {
         function get_visibilities(){
             return visibility;
         }
-        
+
         function hide_point(index){
             visibility[index] = false;
         }
@@ -459,8 +459,17 @@ var lineFit = (function() {
         function show_point(index){
             visibility[index] = true;
         }
+
+        function is_visible(index){
+            if (visibility[index]){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
         
-        return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, change_a: change_a, get_a: get_a, get_c: get_c, change_b: change_b, get_b: get_b, change_c: change_c, findError: findError, lineAt: lineAt, quadAt: quadAt, bestFit: bestFit, linear_regression: linear_regression, quadratic_regression: quadratic_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point,clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins, bestFitHorizontal: bestFitHorizontal, getQuadCoeffs: getQuadCoeffs, findQuadError: findQuadError, sumOfQuadSquares: sumOfQuadSquares, bestFitQuadratic: bestFitQuadratic, get_visibilities: get_visibilities, hide_point: hide_point, show_point: show_point, get_visible_points: get_visible_points};
+        return {add_point: add_point, get_point_list: get_point_list, change_line: change_line, getCoeffs: getCoeffs, change_a: change_a, get_a: get_a, get_c: get_c, change_b: change_b, get_b: get_b, change_c: change_c, findError: findError, lineAt: lineAt, quadAt: quadAt, bestFit: bestFit, linear_regression: linear_regression, quadratic_regression: quadratic_regression, sumOfSquares: sumOfSquares, get_variance: get_variance, points_with_square_error: points_with_square_error, getIndexOf: getIndexOf, points_with_abs_error: points_with_abs_error, randomize_points: randomize_points, replace_point: replace_point,clear_points: clear_points, get_maxs_and_mins: get_maxs_and_mins, bestFitHorizontal: bestFitHorizontal, getQuadCoeffs: getQuadCoeffs, findQuadError: findQuadError, sumOfQuadSquares: sumOfQuadSquares, bestFitQuadratic: bestFitQuadratic, get_visibilities: get_visibilities, hide_point: hide_point, show_point: show_point, get_visible_points: get_visible_points, is_visible:is_visible};
    }
     
     function Controller(model) {
@@ -484,12 +493,12 @@ var lineFit = (function() {
             }
         }
 
-        function add_unemployment_from_file(number){
-            model.clear_points();
-            for (var i = 0; i < unemployment[number].length; i++) {
-                model.add_point(unemployment[number][i]);
-            };
-        }
+        // function add_unemployment_from_file(number){
+        //     model.clear_points();
+        //     for (var i = 0; i < unemployment[number].length; i++) {
+        //         model.add_point(unemployment[number][i]);
+        //     };
+        // }
         function change_best_fit_line(){
             var coeffs = model.bestFit()
             model.change_line(coeffs);
@@ -506,7 +515,8 @@ var lineFit = (function() {
             model.change_c(coeffs[2]);
         }
 
-        return {add_unemployment_from_file:add_unemployment_from_file, add_point_from_input: add_point_from_input, add_spring_from_file: add_spring_from_file, change_best_fit_line: change_best_fit_line, change_best_fit_line_horizontal: change_best_fit_line_horizontal, change_best_fit_quadratic: change_best_fit_quadratic, add_anscombe_from_file: add_anscombe_from_file};
+
+        return {add_point_from_input: add_point_from_input, add_spring_from_file: add_spring_from_file, change_best_fit_line: change_best_fit_line, change_best_fit_line_horizontal: change_best_fit_line_horizontal, change_best_fit_quadratic: change_best_fit_quadratic, add_anscombe_from_file: add_anscombe_from_file};
     }
     /* View that controls how the content is displayed to the user.
         contains instance variables:
@@ -532,14 +542,14 @@ var lineFit = (function() {
         updateBestFitDisplay
         updateDisplay
     */
-    function View(div,model,controller) {    
+    function View(div,model,controller) {
         var color_scale = d3.scale.linear()
                 .domain([0, yMax])
                 .range(['#61A72D','#CC0000']);
         
         div.append("<div class='container-fluid'><div class='row-fluid'></div><div class='row-fluid'><div class='span12 well'><div class='span8 graph'></div><div class='span4 table-container'></div></div></div>");
         
-        $(".table-container").append("<div class = 'row-fluid'><table class = 'table table-striped data-table'></table></div><div class='row-fluid'><input class='x-adder' placeholder = 'x'><input class='y-adder' placeholder = 'y' style = 'margin-left:5px;'><button class = 'btn btn-small add-point' type = 'button'>Add Point</button></div><br></br><div class = 'row-fluid'><input class='point-number' placeholder = '# of points' style = 'margin-right:10px; width:30%'><button class = 'btn btn-small randomize'>Randomize Points</button></div>");
+        $(".table-container").append("<div class = 'row-fluid data-table-main'><table class = 'table table-striped data-table'></table></div><p><div class='row-fluid'><input class='x-adder' placeholder = 'x'><input class='y-adder' placeholder = 'y' style = 'margin-left:5px;'><button class = 'btn btn-small add-point' type = 'button'>Add Point</button></div><br></br><div class = 'row-fluid'><input class='point-number' placeholder = '# of points' style = 'margin-right:10px; width:30%'><button class = 'btn btn-small randomize'>Randomize Points</button></div>");
 
         $(".graph").append("<div class='row-fluid'><div class='span8 chart-container'></div><div class='span4'><div class='graph-container'></div><div class='info-container'></div></div></div>");
         
@@ -550,7 +560,7 @@ var lineFit = (function() {
         $(".controls").append("<div class = 'row-fluid'><div class='container-fluid'><div class='row-fluid'><div class='span4'><span class='a-header'>a:</span><div class='a-slider'></div><div class='a-label'></div></div><div class='span4'><span class='b-header'>b:</span><div class='b-slider'></div><div class='b-label'></div></div><div class='span4'><span class='c-header'>c:</span><div class='c-slider'></div><div class='c-label'></div></div></div><div class='row-fluid'><div class='span6'><input type = 'checkBox' class = 'plot-fit'><span style = 'margin-left:5px;'>Plot Best-Fit</span></div><div class='span6'><span class='equation' style = 'margin-left:10px'>y=ax<sup>2</sup>+bx+c</span></div></div></div></div>");
         $('.examples').remove();
         $('.table-container .row-fluid:nth-of-type(3)').append("<p><div class = 'btn-group examples'></div>");
-        $('.examples').append('<button class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Example Data Sets<span class="caret"></span></button><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li><li class = "dropdown-submenu"><a tabindex="-1" href="#" class = "work">Unemployment Rate</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="work" data-index="0">2008</a></li><li><a tabindex="-1" href="#" class="work" data-index="1">2009</a></li></ul></li><li><a tabindex="-1" href="#" class = "spring">Spring</a></li></ul>');
+        $('.examples').append('<button class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">Example Data Sets<span class="caret"></span></button><ul class="dropdown-menu"><li class="dropdown-submenu"><a tabindex="-1" href="#">Anscombe\'s Quartet</a><ul class="dropdown-menu"><li><a tabindex="-1" href="#" class="anscombe" data-index="0">Anscombe 1</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="1">Anscombe 2</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="2">Anscombe 3</a></li><li><a tabindex="-1" href="#" class="anscombe" data-index="3">Anscombe 4</a></li></ul></li><li><a tabindex="-1" href="#" class = "spring">Spring</a></li></ul>');
         
         var tooltip = d3.select("body").append("div").attr("class","point-error").text("");
         
@@ -931,7 +941,6 @@ var lineFit = (function() {
             var points = model.get_point_list();
             var visibility = model.get_visibilities();
             var point_index;
-            var isDragging;
             chart.selectAll(".datapoint").data(points).enter().append("circle")
                 .attr("class", "datapoint")
                 .attr("cx", function(d){return x_scale(d[0])})
@@ -960,24 +969,12 @@ var lineFit = (function() {
                     point_index = model.getIndexOf(d[0],d[1]);
                     return point_index;
                 })
-                .style("fill",function(d,i){if(visibility[i] == true){ return "blue"} else{ return "lightblue"}})
-//                .on("mouseup",clicked)
-                .on("mousedown",function() {
-                    $(window).on("mousemove",function() {
-                        isDragging = true;
-                        $(window).off("mousemove");
-                    });
-                })
-                .on("mouseup", function() {
-                    var wasDragging = isDragging;
-                    isDragging = false;
-                    $(window).off("mousemove");
-                    console.log(wasDragging);
-                    if (!wasDragging) { //was clicking
-                        clicked($(this).attr("id"));
-                    }
-                })
                 .call(move)
+                .on("click",function() {
+                    clicked($(this).attr('id'));
+                    // console.log(visibility);
+                })
+                .style("fill",function(d,i){if(visibility[i] == true){ return "blue"} else{ return "lightblue"}})
                 .attr("r", "4");
         }
         
@@ -1043,7 +1040,17 @@ var lineFit = (function() {
         }
         
         function clicked(pointindex){
-            $('.selector'+pointindex).click();
+            var visibility = model.get_visibilities();
+            // console.log($('.selector'+pointindex).attr('id'))
+            if (model.is_visible($('.selector'+pointindex).attr('id'))){
+                model.hide_point($('.selector'+pointindex).attr('id'));
+                console.log(visibility[$('.selector'+pointindex).attr('id')]);
+            }
+
+            else{
+                model.show_point($('.selector'+pointindex).attr('id'));
+                console.log(visibility[$('.selector'+pointindex).attr('id')]);
+            }
         }
             
         //adds vertical bars from point to best-fit line (with color scale that displays how much error)
@@ -1077,16 +1084,8 @@ var lineFit = (function() {
 
         var move =  d3.behavior.drag()
                         .on("drag",drag)
-                        // .on("dragend",function(){
-                        //     dict.length = 0;
-                        //     var dragPoint = d3.select(this);
-                        //     var newX = x_scale2(parseInt(dragPoint.attr("cx")));
-                        //     var newY = y_scale2(parseInt(dragPoint.attr("cy")));
-                     
-                        //     model.replace_point(dragPoint.attr("id"),newX,newY);
-                        //     updateDisplay();
-                            
-                        
+                    //     .on("dragend",function(){
+                    //         isDragging = false;
                     // });
         
                 function drag(){
@@ -1099,13 +1098,6 @@ var lineFit = (function() {
                     model.replace_point(dragPoint.attr("id"), newX, newY);
                     updateDisplay();
                 } 
-
-//            function drag(){
-//                var dragPoint = d3.select(this);
-//                dragPoint
-//                .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
-//                .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
-//            }
         
         //returns a string that shows how the sum of squares error was calculated by color
         function makeErrorSquareString(color_scale){
