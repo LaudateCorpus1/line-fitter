@@ -969,12 +969,19 @@ var lineFit = (function() {
                     point_index = model.getIndexOf(d[0],d[1]);
                     return point_index;
                 })
-                .call(move)
                 .on("click",function() {
                     clicked($(this).attr('id'));
-                    // console.log(visibility);
+                    console.log(visibility);
                 })
-                .style("fill",function(d,i){if(visibility[i] == true){ return "blue"} else{ return "lightblue"}})
+                .style("fill",function(d,i){
+                if(visibility[i]){ 
+                    return 'blue';
+                } 
+                else{ 
+                    return 'lightblue';                
+                }
+                })
+                .call(move)
                 .attr("r", "4");
         }
         
@@ -1044,13 +1051,12 @@ var lineFit = (function() {
             // console.log($('.selector'+pointindex).attr('id'))
             if (model.is_visible($('.selector'+pointindex).attr('id'))){
                 model.hide_point($('.selector'+pointindex).attr('id'));
-                console.log(visibility[$('.selector'+pointindex).attr('id')]);
             }
 
             else{
                 model.show_point($('.selector'+pointindex).attr('id'));
-                console.log(visibility[$('.selector'+pointindex).attr('id')]);
             }
+            updateDisplay();
         }
             
         //adds vertical bars from point to best-fit line (with color scale that displays how much error)
@@ -1083,10 +1089,7 @@ var lineFit = (function() {
         }
 
         var move =  d3.behavior.drag()
-                        .on("drag",drag)
-                    //     .on("dragend",function(){
-                    //         isDragging = false;
-                    // });
+                        .on("drag",drag) 
         
                 function drag(){
                     var dragPoint = d3.select(this);
