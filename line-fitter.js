@@ -1093,13 +1093,16 @@ var lineFit = (function() {
         
                 function drag(){
                     var dragPoint = d3.select(this);
-                    dragPoint
-                    .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
-                    .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
-                    var newX = x_scale2(parseInt(dragPoint.attr("cx")));
-                    var newY = y_scale2(parseInt(dragPoint.attr("cy")));
-                    model.replace_point(dragPoint.attr("id"), newX, newY);
-                    updateDisplay();
+                    var visibility = model.get_visibilities();
+                    if (visibility[dragPoint.attr('id')]){
+                        dragPoint
+                        .attr("cx",function(){return d3.event.dx + parseInt(dragPoint.attr("cx"));})
+                        .attr("cy",function(){return d3.event.dy +parseInt(dragPoint.attr("cy"));})
+                        var newX = x_scale2(parseInt(dragPoint.attr("cx")));
+                        var newY = y_scale2(parseInt(dragPoint.attr("cy")));
+                        model.replace_point(dragPoint.attr("id"), newX, newY);
+                        updateDisplay();
+                }
                 } 
         
         //returns a string that shows how the sum of squares error was calculated by color
