@@ -50,7 +50,7 @@
 
     <div class="modal-body">
      <div class = "tab-content">
-        <div class="tab-pane fade in" id="credits"><text style = "font-size:14pt">Our Mentor: Professor Fr&eacute;do Durand<br> Tools Used: D3, jQuery, jQueryUI, and Bootstrap</text></div>
+        <div class="tab-pane fade in" id="credits"><text style = "font-size:14pt">Our Mentor: <a href="http://people.csail.mit.edu/fredo/">Professor Fr&eacute;do Durand</a><br> Tools Used: D3, jQuery, jQueryUI, and Bootstrap</text></div>
         <div class ="tab-pane fade in active" id = "instructions"><h3>How the Widget works:</h3>
             <text style = "font-size:12pt;font-family:Times;">
                 1. In order to add point values, enter the x and y coordinates in the respective input fields and hit 'Add Point.'
@@ -63,7 +63,11 @@
                 <br>
                 5. You will also notice a graph that appears between the graphing area and the table. This graph indicates the value of the total squared error. In other words, as your error increases, the graph's height will increase with it. 
                 <br>
-                6. You can also drag points around the graph and see how they change the line of best fit. In addition, you can use the sliders (located below 'Degree of Polynomial') to change the coefficient values and see how the line of best fit is changing.
+                6. You can also drag points around the graph and see how they change the line of best fit. Only visible points can be dragged. In addition, you can use the sliders (located below 'Degree of Polynomial') to change the coefficient values and see how the line of best fit is changing.
+                <br>
+                7. If you click on a point, the point will be temporarily removed from the point list. You will notice that the checkbox corresponding to that point will be unchecked. 
+                <br>
+                8.You can include the point again by either clicking the checkbox or clicking on the point again. This feature will allow you to look at how a specific point affects the best fit of the graph. 
 
             </text>
 
