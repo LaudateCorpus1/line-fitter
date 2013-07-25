@@ -1176,6 +1176,7 @@ var lineFit = (function() {
                 updateDisplay();
             });
             
+            //append the total squared error to the end of the table
             if(!isQuadratic){
                 $('.data-table').append("<tr><th>Total:</th><td></td><td></td><td></td><td></td><th>"+round_number(model.sumOfSquares(),2)+"</th></tr>");
             }
