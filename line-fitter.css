@@ -7,6 +7,13 @@ body{
     margin-left: 40px;
 }
 
+span{
+    font-size: 12px;
+}
+
+span.equation,.a-display,.b-display, span.squared{
+    font-size: 18px;
+}
 
 .hero-unit{
     margin: 0;

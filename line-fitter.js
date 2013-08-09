@@ -790,12 +790,13 @@ var lineFit = (function() {
                     isValidInput = true;
                 }
 
-                if (!isValidInput || isNaN(parseFloat($('.x-adder').val())) && isNaN(parseFloat($('.y-adder').val()))){
+                if (!isValidInput || isNaN(parseFloat($('.x-adder').val())) || isNaN(parseFloat($('.y-adder').val()))){
                     $(".add-point").after('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Sorry!</strong> Please enter real numbers </div>');
                     $(".error")[0].play();
                 }
 
                 else {
+                    $(".alert").remove();
                     var x = parseFloat($('.x-adder').val());
                     var y = parseFloat($('.y-adder').val());
                     var point = [x,y]
