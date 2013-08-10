@@ -821,6 +821,7 @@ var lineFit = (function() {
     
             $('.randomize').on("click",function(){
                 if ($('.point-number').val() > 0){
+                    $(".alert").remove();
                     model.randomize_points($(".point-number").val());
                     setupGraph(xMin,xMax,yMin,yMax);
                     updateDisplay()
@@ -828,7 +829,7 @@ var lineFit = (function() {
 
                 else{
                     
-                    $('.table-container').append("<div class='alert' style = 'background:turquoise;color:black;'><button type='button' class='close' data-dismiss='alert'>&times;</button><strong>Error: No input received. Please enter the # of points</strong></div>");
+                    $('.table-container').append("<div class='alert' style = 'background:turquoise;color:black;'><button type='button' class='close' data-dismiss='alert'>&times;</button><strong>Please enter a real number of points</strong></div>");
                     $(".error")[0].play();
                 }
             });
